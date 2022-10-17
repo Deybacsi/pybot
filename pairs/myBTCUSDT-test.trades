@@ -1,0 +1,125 @@
+{
+    "symbol": "BTCUSDT",
+    "orderId": 5626443,
+    "orderListId": -1,
+    "clientOrderId": "2PfxNzGYro6hzNDKxl62bf",
+    "transactTime": 1665947648795,
+    "price": "0.00000000",
+    "origQty": "0.00078300",
+    "executedQty": "0.00078300",
+    "cummulativeQuoteQty": "14.99305626",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "BUY",
+    "fills": [
+        {
+            "price": "19148.22000000",
+            "qty": "0.00078300",
+            "commission": "0.00000000",
+            "commissionAsset": "BTC",
+            "tradeId": 2058832
+        }
+    ]
+}
+-#-#-#-#-
+{
+    "symbol": "BTCUSDT",
+    "orderId": 5626873,
+    "orderListId": -1,
+    "clientOrderId": "quzTsBoW4KV3ENhKMcENue",
+    "transactTime": 1665947721239,
+    "price": "0.00000000",
+    "origQty": "0.00078300",
+    "executedQty": "0.00078300",
+    "cummulativeQuoteQty": "14.99175648",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "BUY",
+    "fills": [
+        {
+            "price": "19146.56000000",
+            "qty": "0.00078300",
+            "commission": "0.00000000",
+            "commissionAsset": "BTC",
+            "tradeId": 2058925
+        }
+    ]
+}
+-#-#-#-#-
+{
+    "symbol": "BTCUSDT",
+    "orderId": 5626916,
+    "orderListId": -1,
+    "clientOrderId": "FjeEJYmDH1RIV7v5KG5cHW",
+    "transactTime": 1665947728858,
+    "price": "0.00000000",
+    "origQty": "0.00078300",
+    "executedQty": "0.00078300",
+    "cummulativeQuoteQty": "14.99180346",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "BUY",
+    "fills": [
+        {
+            "price": "19146.62000000",
+            "qty": "0.00078300",
+            "commission": "0.00000000",
+            "commissionAsset": "BTC",
+            "tradeId": 2058936
+        }
+    ]
+}
+-#-#-#-#-
+{
+    "symbol": "BTCUSDT",
+    "orderId": 5690027,
+    "orderListId": -1,
+    "clientOrderId": "Awudl4TlKVts0TXUmxZlgL",
+    "transactTime": 1665957052158,
+    "price": "0.00000000",
+    "origQty": "0.00078000",
+    "executedQty": "0.00078000",
+    "cummulativeQuoteQty": "14.99121000",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "BUY",
+    "fills": [
+        {
+            "price": "19219.50000000",
+            "qty": "0.00078000",
+            "commission": "0.00000000",
+            "commissionAsset": "BTC",
+            "tradeId": 2080791
+        }
+    ]
+}
+-#-#-#-#-
+{
+    "symbol": "BTCUSDT",
+    "orderId": 6284684,
+    "orderListId": -1,
+    "clientOrderId": "kCvsGUK5IbkN1cDb8Sy03I",
+    "transactTime": 1666022767371,
+    "price": "0.00000000",
+    "origQty": "0.00078000",
+    "executedQty": "0.00078000",
+    "cummulativeQuoteQty": "15.25467060",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "SELL",
+    "fills": [
+        {
+            "price": "19557.27000000",
+            "qty": "0.00078000",
+            "commission": "0.00000000",
+            "commissionAsset": "USDT",
+            "tradeId": 2240536
+        }
+    ]
+}
+-#-#-#-#-
