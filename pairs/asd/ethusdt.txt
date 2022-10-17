@@ -1,0 +1,8 @@
+{
+    "asset1": "ETH",
+    "asset2": "USDT",
+    "quantity": 15,
+    "candlestobuy": 13,
+    "candlestosell": 13,
+    "stopped": false
+}
