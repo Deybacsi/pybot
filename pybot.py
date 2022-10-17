@@ -316,24 +316,35 @@ def drawwindow(stdscr):
             stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,"-",curses.A_DIM)
 
     # order list
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+2 ,pybot_threads[actualthread]["asset2"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+8+7,pybot_threads[actualthread]["asset1"])
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+7 ,pybot_threads[actualthread]["asset1"])
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+16,pybot_threads[actualthread]["asset2"])
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+26,"P/L")
     for i in range(0,orderwindow["height"]):
         stdscr.addstr(orderwindow["top"]+1+i,orderwindow["left"],'|')
+        
         if len(pybot_threads[actualthread]["orders"])-1-i>=0:
             actorder=pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]
+            ordercolor=curses.color_pair(0)
+            if actorder["side"]=="SELL":
+                profitloss=round((float(actorder["cummulativeQuoteQty"])/float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1]["cummulativeQuoteQty"])-1)*100,2)
+                if profitloss>=0: ordercolor=curses.color_pair(3)
+                else: ordercolor=curses.color_pair(2)
+                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+30-len(str(profitloss)),str(profitloss)+'%',ordercolor)
+
             #dl(str(actorder))
             # buy/sell
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+2,actorder["side"])
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+2,actorder["side"],ordercolor)
             # date
             trtime=str(datetime.datetime.fromtimestamp(int(actorder["transactTime"]/1000), tz=timezone.utc ))
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7   ,trtime[:-9])
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7   ,trtime[:-9],ordercolor)
+            # asset1
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
+                -len(actorder["executedQty"]), actorder["executedQty"],ordercolor)             
             # asset2
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+8
-                -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)))
-            # price
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+8+14
-                -len(actorder["executedQty"]), actorder["executedQty"])            
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
+                -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)
+            
+           
     
 
 
