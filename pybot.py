@@ -1,38 +1,7 @@
 #!/usr/bin/python3
 
-
-
-
-# éles key
-#APIkey="kQKd4JP9IHAMdjo3Fhe26BCalFY3E8C8wDG5KisDODi2Y2Yo07nDS8wGHMRYjzAx"
-#APIsecret="daUNlQ7ixUTyGNbFMFW9OurWRNKiD9cu0cUuF5OgXdlo8lcbVRawLehPW2WD4pXo"
-
-#testnet key
-# https://testnet.binance.vision/key/generate
-#tAPIkey="DDRGTYu92D9SOHuzqMdsAqUuUgQchwoSxGtitjI85KptdJztdKZqJsnxfRCYmVgW"
-#tAPIsecret="Q5YoQoSi5r6XJ6A0zp7bdnfzE51VVLnZg43NLf2pObJmYlPh9DVg14hk8VQX3o8y"
-
 programname="2daMoonBot"
 programversion="v0.1"
-
-pybot_threads=[]
-"""
-pybot_threads.append({ 
-    "threadname"    : "my BTC-USDT",    # to identify threads
-    "asset1"        : "BTC",            # trading pairs
-    "asset2"        : "USDT",
-    "quantity"      : 15,              # used to buy asset1 with asset2 in specified amount (buy BTC for "quantity" USDT)
-    "candlestobuy"  : 13,                # candles to wait until buy
-    "candlestosell" : 13,                #                   and sell
-    "stopped"       : False,            # can be used to temporary stop thread (also used to stop during runtime if balance insufficient)
-
-    # used internally
-    "asset1balance" : 0,                
-    "asset2balance" : 0,
-    "currentprice"  : 0
-})
-"""
-
 
 
 from http import client
@@ -48,34 +17,46 @@ from curses import wrapper
 
 from matplotlib.pyplot import pause
 
-
+# thread's data
+pybot_threads=[]
+# thread displayed on screen
 actualthread=0
 
+# seconds between refreshes
+# in every refresh, bot calculates data, and checks for buy/sell indicators
+# if they signals, bot will buy/sell
+refreshtime=60
+# counter for elapsed time in seconds
+elapsed = 0
+
+# shitty subwindows defs, values recalculated in drawwindow
 chartwindow={ "top" : 2,"left": 0, "width":0, "height":0}
 statswindow={"top" : 2,"left": 0, "width":0,"height":0}
 orderwindow={"top" : 2,"left": 0,"width":0,"height":0}
 
-os.environ.setdefault('ESCDELAY', '25')     # set esc delay to 25ms
+os.environ.setdefault('ESCDELAY', '25')     # set esc key delay to 25ms
 
+# init debug log, and dl()
 d=open('debug.log','w'); d.close()
-
 def dl(str):
     d=open('debug.log','a')
     d.write(str+chr(13))
     d.close()
- 
-#json.dump(pybot_threads[0], open("pairs/myBTCUSDT.txt",'w'), indent=4)
+
+# temporary candledata, only for debug
+fcd=open('candledata.log','w'); fcd.close()
+
+# checking settings.txt
+try:
+    settings=json.load(open("settings.txt"))
+except FileNotFoundError:
+    print('No settings.txt!\nRename default_settings.txt and fill in API keys data!')
+    exit(1)
+
+#print(settings)
 
 
-#startup
-
-settings=json.load(open("settings.txt"))
-
-print(settings)
-
-
-
-#reading pair configs
+#reading pair config files
 dir_list = os.listdir("pairs")
 print("Reading pairs")
 dl("Reading pairs")
@@ -94,7 +75,7 @@ for i in range(0,len(dir_list)):
         pybot_threads[j]["orders"]=[]
         j += 1
         
-if len(pybot_threads)==0: print("No config files in 'pairs' directory. Nothing to read, please check documentation."); dl("No config files, exiting"); exit()
+if len(pybot_threads)==0: print("No config files in 'pairs' directory. Nothing to read, please check documentation."); dl("No config files, exiting"); exit(1)
 print()
 
 # populate candles pricedata with 0
@@ -129,21 +110,19 @@ def getbalances():
 
 # get candle data for 1 thread
 def getcandles(threadno):
-    #pricedata=[]
-    for i in range(0,len(pybot_threads)):   
-        for j in range(0,500):
-            pricedata[i][j]={
-                "ptime" : 0,
-                "popen" : 0,
-                "phigh" : 0,
-                "plow"  : 0,
-                "pclose": 0,
-                "ma7"   : 0,
-                "ma25"  : 0,
-                "ma99"  : 0,
-                "below" : False,
-                "above" : False
-            }    
+    for j in range(0,500):
+        pricedata[threadno][j]={
+            "ptime" : 0,
+            "popen" : 0,
+            "phigh" : 0,
+            "plow"  : 0,
+            "pclose": 0,
+            "ma7"   : 0,
+            "ma25"  : 0,
+            "ma99"  : 0,
+            "below" : False,
+            "above" : False
+        }    
     print("Getting candledata for",pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"],Client.KLINE_INTERVAL_15MINUTE+chr(13))
     candles = client.get_klines(symbol=pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"], interval=Client.KLINE_INTERVAL_15MINUTE)
     print("Got",len(candles),"candles"+chr(13))
@@ -196,16 +175,16 @@ def getcandles(threadno):
             pricedata[threadno][i]["above"]=True
                 
         #print(i,pricedata[threadno][i]["popen"], pricedata[threadno][i]["ma7"],pricedata[threadno][i]["ma25"],pricedata[threadno][i]["ma99"],pricedata[threadno][i]["below"],pricedata[threadno][i]["above"])
-    f=open('candledata.log','w')
+    fcd=open('candledata.log','a')
     for i in range(0,len(candles)):
         
-        f.write(str(i)+' '+str(pricedata[threadno][i]["popen"])+' '
+        fcd.write(str(threadno)+' '+str(i)+' '+str(pricedata[threadno][i]["popen"])+' '
             +str(pricedata[threadno][i]["phigh"])+' '
             +str(pricedata[threadno][i]["plow"])+' '
             +str(pricedata[threadno][i]["pclose"])+'|'
             +str(pricedata[threadno][i]["ma7"])+' '+str(pricedata[threadno][i]["ma25"])+' '+str(pricedata[threadno][i]["ma99"])+'|B:'+str(pricedata[threadno][i]["below"])+' A:'+str(pricedata[threadno][i]["above"])+chr(13))
 
-    f.close()
+    fcd.close()
 
 #draw the price chart for 1 thread
 def drawchart(threadno,stdscr):
@@ -228,7 +207,7 @@ def drawchart(threadno,stdscr):
         for j in range(0,chartwindow["width"],5):
             stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),j,"-")
         stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),0,str(round(pricemax-(pricemax-pricemin)/5*i,2)),curses.A_DIM)
-    
+
     charheightprice=(pricemax-pricemin)/chartwindow["height"]
     
     for i in range(0,chartwindow["width"]+1):
@@ -271,10 +250,13 @@ def drawchart(threadno,stdscr):
 
 # draw the whole screen
 def drawwindow(stdscr):
+    global actualthread
+    dl(str(actualthread))
     # if window too small
     if curses.COLS<80 or curses.LINES<33:
         stdscr.clear(); stdscr.addstr(12,2,"Increase window size :) "); return
  
+    # setup "windows" in lame ways
     chartwindow["width"]=curses.COLS -1 - chartwindow["left"] 
     chartwindow["height"]=int(curses.LINES/2)
     statswindow["top"]=chartwindow["top"]+chartwindow["height"]+3
@@ -286,18 +268,19 @@ def drawwindow(stdscr):
     orderwindow["height"]=curses.LINES-orderwindow["top"]-1    
     stdscr.clear()
     drawchart(actualthread,stdscr)
+    # statusbar
     for i in range(0,curses.COLS):
         stdscr.addstr(0,i," ",curses.color_pair(1))
     stdscr.addstr(0,1,'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"],curses.color_pair(1))
     stdscr.addstr(0,curses.COLS-12,"Refresh: ",curses.color_pair(1))
+    # thread stats
     stdscr.addstr(statswindow["top"],statswindow["left"]+1,'Price: '+str(pybot_threads[actualthread]["currentprice"])+' '+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
-
     stdscr.addstr(statswindow["top"]+1,statswindow["left"]+1,'Balances:')
     stdscr.addstr(statswindow["top"]+2,statswindow["left"]+1,pybot_threads[actualthread]["asset1"]+':')
     stdscr.addstr(statswindow["top"]+2,statswindow["left"]+1+7,str(pybot_threads[actualthread]["asset1balance"]))
     stdscr.addstr(statswindow["top"]+3,statswindow["left"]+1,pybot_threads[actualthread]["asset2"]+':')
     stdscr.addstr(statswindow["top"]+3,statswindow["left"]+1+7,str(pybot_threads[actualthread]["asset2balance"]))
-
+    # candles to... at right
     stdscr.addstr(statswindow["top"]  ,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestosell"]+1-17,"Candles to sell |")
     stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestobuy"] +1-16,"Candles to buy |")
 
@@ -318,13 +301,14 @@ def drawwindow(stdscr):
     # order list
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+7 ,pybot_threads[actualthread]["asset1"])
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+16,pybot_threads[actualthread]["asset2"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+26,"P/L")
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+23,"P/L-"+str(pybot_threads[actualthread]["minprofit"])+'%')
     for i in range(0,orderwindow["height"]):
         stdscr.addstr(orderwindow["top"]+1+i,orderwindow["left"],'|')
         
         if len(pybot_threads[actualthread]["orders"])-1-i>=0:
             actorder=pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]
             ordercolor=curses.color_pair(0)
+            # if sell, calculate P/L, and set corresponding color
             if actorder["side"]=="SELL":
                 profitloss=round((float(actorder["cummulativeQuoteQty"])/float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1]["cummulativeQuoteQty"])-1)*100,2)
                 if profitloss>=0: ordercolor=curses.color_pair(3)
@@ -343,16 +327,16 @@ def drawwindow(stdscr):
             # asset2
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
                 -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)
-            
-           
-    
-
 
 def loadorders(threadno):
     pybot_threads[threadno]["orders"]=[]
     if settings["testmode"]: tfilename="-test"
     else: tfilename=""
-    fo=open("pairs/"+pybot_threads[threadno]["threadname"]+tfilename+".trades",'r')
+    orderfilename="pairs/"+pybot_threads[threadno]["threadname"]+tfilename+".trades"
+    try:
+        fo=open(orderfilename,'r')
+    except FileNotFoundError:
+        fo=open(orderfilename,'w'); fo.close(); fo=open(orderfilename,'r')
     fstr=''
     for fline in fo:
         
@@ -372,12 +356,9 @@ def saveorder(threadno,order):
     fo.write(chr(10)+'-#-#-#-#-'+chr(10))
     fo.close
 
-
-refreshtime=60
-elapsed = 0
-
 # main prog
 def main(stdscr):
+    global actualthread
     pressedkey=0
 
     # Clear screen
@@ -441,9 +422,9 @@ def main(stdscr):
                     oktosellcounter += 1                
             loadorders(actthread)
 
-            lastorder=""
+            lastorder={}
             if len(pybot_threads[actthread]["orders"])==0:      # if there are no orders, we will start with a buy next
-                lastorder="SELL"
+                lastorder["side"]="SELL"
             if len(pybot_threads[actthread]["orders"])>0:
                 lastorder=pybot_threads[actthread]["orders"][len(pybot_threads[actthread]["orders"])-1]
 
@@ -455,51 +436,13 @@ def main(stdscr):
                 saveorder(actthread,client.order_market_buy(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quoteOrderQty=pybot_threads[actthread]["quantity"]))
                 pass
 
-
-            # TODO
-
-            # SZÁZALÉKOT BELE!
-            # sell order
-            if oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY":
+            # sell order with minprofit checking
+            if (oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
+                    and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
                 saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
                 pass
 
-                    
-
-
-            # UTC!  
-            #saveorder(0,client.order_market_buy(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["lastorder"]))
-            
-
-            """
-
-            {
-                "symbol": "BTCUSDT",
-                "orderId": 5585808,
-                "orderListId": -1,
-                "clientOrderId": "nPymTDDI2pjH0yMbVFyarL",
-                "transactTime": 1665940755075,
-                "price": "0.00000000",
-                "origQty": "0.00052200",
-                "executedQty": "0.00052200", - ez a vett db
-                "cummulativeQuoteQty": "9.99351774",
-                "status": "FILLED",
-                "timeInForce": "GTC",
-                "type": "MARKET",
-                "side": "BUY",
-                "fills": [
-                    {
-                        "price": "19144.67000000",
-                        "qty": "0.00052200",
-                        "commission": "0.00000000",
-                        "commissionAsset": "BTC",
-                        "tradeId": 2046567
-                    }
-                ]
-            }
-            """
-
-        #drawwindow(stdscr)
+                
         start = time.time()
         elapsed=0
         while elapsed < refreshtime:
@@ -512,40 +455,23 @@ def main(stdscr):
 
 
             pressedkey=stdscr.getch()
+            # num buttons
+            if pressedkey>=48 and pressedkey<=57:
+                dl("asdfasfasdf")
+                if pressedkey-48<len(pybot_threads):
+                    actualthread = pressedkey-48
+                    #dl(str(actualthread))
+                    #drawwindow(stdscr)
+                    #stdscr.refresh()
+
+            # ESC
             if pressedkey==27:
                 curses.endwin(); print();print(); print("Thanks for using",programname,programversion); print(); exit()
+            # window resize
             if pressedkey==curses.KEY_RESIZE:
                 curses.LINES, curses.COLS = stdscr.getmaxyx()
 
-
-
-
-
-
-
-
-    
-    
-    
-
-
-
-    #if 
-    #order = client.order_market_buy(
-    #    symbol=pybot_threads[actualthread]["asset1"]+pybot_threads[actualthread]["asset2"],
-    #    quantity=pybot_threads[actualthread]["quantity"]
-    #)
-
-    #currenttime=time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(candles[len(candles)-1][0]/1000))
-    #utctime=datetime.datetime.fromtimestamp(candles[len(candles)-1][0]/1000, tz=timezone.utc)
-
-    #currentprice=float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
-    #print(utctime,' - (', currenttime,' local)')
-    #print('MA 7,25,99: ',ma7, ma25, ma99)
-    #print('Price     : ',currentprice)
-
-
-    
+   
 
 print("Initializing screen")
 wrapper(main)
@@ -571,12 +497,6 @@ curses:
 https://docs.python.org/3/howto/curses.html
 
 https://docs.python.org/3/library/curses.html#module-curses
-
-fold All folds all regions in the editor:
-Ctrl + K, Ctrl + 0 (zero) on Windows and Linux
-
-Unfold All unfolds all regions in the editor:
-Ctrl + K, Ctrl + J on Windows and Linux
 
 
 eazybot:
