@@ -1,0 +1,7 @@
+{
+    "testmode": true,
+    "apikey": "xxx",
+    "apisecret": "xxx",
+    "tapikey": "xxx",
+    "tapisecret": "xxx"    
+}
