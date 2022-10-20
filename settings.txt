@@ -1,7 +1,0 @@
-{
-    "testmode": true,
-    "apikey": "kQKd4JP9IHAMdjo3Fhe26BCalFY3E8C8wDG5KisDODi2Y2Yo07nDS8wGHMRYjzAx",
-    "apisecret": "daUNlQ7ixUTyGNbFMFW9OurWRNKiD9cu0cUuF5OgXdlo8lcbVRawLehPW2WD4pXo",
-    "tapikey": "DDRGTYu92D9SOHuzqMdsAqUuUgQchwoSxGtitjI85KptdJztdKZqJsnxfRCYmVgW",
-    "tapisecret": "Q5YoQoSi5r6XJ6A0zp7bdnfzE51VVLnZg43NLf2pObJmYlPh9DVg14hk8VQX3o8y"    
-}
