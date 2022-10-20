@@ -250,7 +250,7 @@ def drawchart(threadno,stdscr):
 # draw the whole screen
 def drawwindow(stdscr):
     global actualthread
-    dl(str(actualthread))
+    #dl(str(actualthread))
     # if window too small
     if curses.COLS<80 or curses.LINES<33:
         stdscr.clear(); stdscr.addstr(12,2,"Increase window size :) "); return
@@ -389,17 +389,17 @@ def main(stdscr):
             print(pybot_threads[i]["asset2"],':',pybot_threads[i]["asset2balance"]+chr(13))
             pybot_threads[i]["symbol_info"]=client.get_symbol_info(pybot_threads[i]["asset1"]+pybot_threads[i]["asset2"])
             print(pybot_threads[i]["symbol_info"]["symbol"]+' Status: '+pybot_threads[i]["symbol_info"]["status"]+' SpotAllowed: '+str(pybot_threads[i]["symbol_info"]["isSpotTradingAllowed"])+chr(13))
-            dl(str(pybot_threads[i]["symbol_info"]))
+            #dl(str(pybot_threads[i]["symbol_info"]))
 
         for actthread in range(0,len(pybot_threads)):
             getcandles(actthread)
             print("Get current price")
             pybot_threads[actthread]["currentprice"] = float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
-            dl(str(pybot_threads[actthread]["currentprice"]))
+            #dl(str(pybot_threads[actthread]["currentprice"]))
 
             oktobuycounter=0
             oktosellcounter=0
-            dl(str(pricedata))
+            #dl(str(pricedata))
             # count prev candles if below
             for i in range(len(pricedata[actthread])-1,
                     len(pricedata[actthread])-1-pybot_threads[actthread]["candlestobuy"],-1):
@@ -428,9 +428,6 @@ def main(stdscr):
                 lastorder=pybot_threads[actthread]["orders"][len(pybot_threads[actthread]["orders"])-1]
 
             # buy order
-            dl(str(oktobuycounter))
-            dl(str(oktosellcounter))
-            dl(str(lastorder))
             if oktobuycounter==pybot_threads[actthread]["candlestobuy"]+1 and lastorder["side"]=="SELL":
                 saveorder(actthread,client.order_market_buy(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quoteOrderQty=pybot_threads[actthread]["quantity"]))
                 pass
