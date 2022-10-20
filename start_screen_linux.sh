@@ -1,1 +1,3 @@
-screen -S pybot -dm pybot.py
+screen -S pybotscreen -dm ./pybot.py
+
+

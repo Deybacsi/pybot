@@ -168,6 +168,18 @@ A test modeban az árfolyam **nem tükrözi** a valós piaci adatokat, mivel ren
 
 Egyelőre csak linuxon lett tesztelve a bot, windowson **elvileg** ugyanúgy működnie kell.
 
+## Linux scriptek
 
+### start_screen_linux.sh
+
+Screen-el háttérbe rakja a botot, hogy ssh-n keresztül futtatva ne álljon le, ha az ssh kapcsolat megszakad.
+
+### list_screen.sh
+
+Kilistázza az aktuális futó screen sessionöket
+
+### switch_to_screen.sh
+
+Átvált a háttérben futó screen sessionre. 
 
 
