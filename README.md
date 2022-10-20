@@ -2,9 +2,14 @@
 
 Első futtatás előtt nevezd át a `default_settings.txt`-t `settings.txt` névre.
 
+Érdemes mindent kitörölni a `pairs` mappából, hogy tiszta lappal kezdhess :)
+
+Az ott található `BTCUSDT.example` egy minta a kereskedési párok beállításához.
+
+Minden pár külön saját beállítás filet igényel.
+
 ## Linux:
 
-Valamint:
 ```
 pip install python-binance
 ```
@@ -12,6 +17,7 @@ pip install python-binance
 ### Raspberry pi:
 
 Ha régi a raspbian:
+
 Error : 
 ```
 E: Repository 'http://raspbian.raspberrypi.org/raspbian buster InRelease' changed its 'Suite' value from 'stable' to 'oldstable'
@@ -44,7 +50,9 @@ A `pybot.py`-on duplaklikk a gyári windows cmd ablakban indítja a botot. Ha it
 
 # settings.txt
 
-Beállítások:
+A bot alapbeállításai.
+
+Tartalma:
 
 ```
 {
@@ -56,26 +64,26 @@ Beállítások:
 }
 ```
 
-## testmode:
+**testmode**:
 
-**True**: Binance sandbox használata, JÁTÉKPÉNZZEL
+- **True**: Binance sandbox használata, JÁTÉKPÉNZZEL
+    Ez esetben a "**tapikey**" és "**tapisecret**" értékeket kell kitölteni.
 
-Ez esetben a "**tapikey**" és "**tapisecret**" értékeket kell kitölteni.
+    API key-t a https://testnet.binance.vision/key/generate oldalon lehet generáltatni, Github account kell hozzá.
 
-API key-t a https://testnet.binance.vision/key/generate oldalon lehet generáltatni, Github account kell hozzá.
+    Keygenerálás után a létrejövő Binance sandbox accountba minden kereskedhető coinból leoszt a rendszer egy szép adagot egyenlegként. Pl 1BTC, 10 000 USDT, stb.
 
-Keygenerálás után a létrejövő Binance sandbox accountba minden kereskedhető coinból leoszt a rendszer egy szép adagot egyenlegként. Pl 1BTC, 10 000 USDT, stb.
-Az egyenlegek, és egyéb adatok havonta resetelődnek az eredeti állapotra.
+    Az egyenlegek, és egyéb adatok havonta resetelődnek az eredeti állapotra!
 
-**False**: VALÓS TRADING, VALÓS PÉNZZEL!
+- **False**: VALÓS TRADING, VALÓS PÉNZZEL!
 
-Az "**apikey**" és "**apisecret**" párost kell megadni.
+    Az "**apikey**" és "**apisecret**" párost kell megadni.
 
-API key generálás: https://www.binance.com/en/my/settings/api-management
+    API key generálás: https://www.binance.com/en/my/settings/api-management
 
-A key restrictionsnél az *"Enable Spot & Margin Trading"* engedélyt meg kell adni. A létrehozott key alapállapotban 90 napig érvényes, utána kézzel meg kell hosszabbítani.
+    A key restrictionsnél az *"Enable Spot & Margin Trading"* engedélyt meg kell adni. A létrehozott key alapállapotban 90 napig érvényes, utána kézzel meg kell hosszabbítani.
 
-Ha beállítasz IP cím alapú korlátozást, akkor lehet korlátlan ideig érvényes keyt létrehozni.
+    Ha beállítasz IP cím alapú korlátozást, akkor lehet korlátlan ideig érvényes keyt létrehozni.
 
 # Kereskedési párok
 
