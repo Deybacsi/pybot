@@ -1,6 +1,4 @@
-# pybot
-
-## settings.txt
+# settings.txt
 
 Első futtatás előtt nevezd át a `default_settings.txt`-t `settings.txt` névre.
 
@@ -9,7 +7,7 @@ Valamint:
 pip install python-binance
 ```
 
-Beállítások:
+`settings.txt` beállítások:
 
 ```
 {
@@ -21,7 +19,7 @@ Beállítások:
 }
 ```
 
-### testmode:
+## testmode:
 
 **True**: Binance sandbox használata, JÁTÉKPÉNZZEL
 
@@ -42,14 +40,14 @@ A key restrictionsnél az *"Enable Spot & Margin Trading"* engedélyt meg kell a
 
 Ha beállítasz IP cím alapú korlátozást, akkor lehet korlátlan ideig érvényes keyt létrehozni.
 
-## Kereskedési párok
+# Kereskedési párok
 
 A bot több párral is tud egyszerre kereskedni, ezeknek a beállításait a *pairs* folderben létrehozott `.txt` fileokban kell megadni.
 
 A bot "thread" névvel jelöli a különböző beállított párokat.
 Lehetséges ugyanolyan párokat létrehozni, különböző idő/profit beállításokkal. (Ugyanolyannal is lehet, mint egy már létező, de annak sok értelme nincs :D )
 
-### pairs/x.txt
+## pairs/x.txt
 
 A file neve bármi lehet, csak annyi a lényeges, hogy .txt kiterjesztése legyen. Más fileokat nem vesz figyelembe a bot.
 
@@ -99,7 +97,7 @@ Hátránya: a buy order után "beragadhatunk", ha lefelé tartó trend van, és 
 **stopped** - jelenleg not implemented
 Hogy ne kelljen fileokat törölgetni/moveolni, itt kikapcsolható (lesz) az adott kereskedési szál. 
 
-### pairs/x.trades
+## pairs/x.trades
 
 A `.txt` konfig fileokban megadott párokkal eddig végzett tranzakciók adatai (majdnem) JSON formátumban, lefele időrendben. 
 A bot ezekből dolgozik, és tudja, hogy éppen venni vagy eladni kell, valamint ezek adataiból számolja a profit %-okat. Kézzel szerkesztésük nem ajánlott, ha nem tudod mit csinálsz.
@@ -107,11 +105,11 @@ Ha a file nem létezik, a bot létrehozza, és a kereskedés folyamán szépen f
 Hasznos lehet majd jövőbeni összesített statisztikákhoz, stb.
 Egy esetleges fent említett zuhanó trend árfolyam beragadásnál a legutolsó BUY ordert kitörölve a bot "elfelejti" azt, és így nem akar majd sell-el próbálkozni. Újraindítás után megint venni akar majd.
 
-### debug.log, candledata.log
+## debug.log, candledata.log
 
 Szemét, debug fileok
 
-## Tudnivalók
+# Tudnivalók
 
 **Kilépés**: ESC
 
@@ -133,4 +131,25 @@ A test modeban az árfolyam **nem tükrözi** a valós piaci adatokat, mivel ren
 
 Egyelőre csak linuxon lett tesztelve a bot, windowson **elvileg** működnie kell.
 
+# Windows install
+
+Python letöltése innen: https://www.python.org/downloads/
+
+Indítás után "Add python.exe to PATH"-hoz pipa, majd "Install now", és "Disable path length limit", Close
+
+Win+R, szövegmezőbe `cmd` beír, majd enter
+
+A megjelenő cmd ablakba: `pip install python-binance`, enter
+
+egyelőre nincs tesztelve, windowson kell(ene) az unicurses
+
+```
+C:\Users\deypr\Documents\GitHub\pybot>pybot.py
+Traceback (most recent call last):
+  File "C:\Users\deypr\Documents\GitHub\pybot\pybot.py", line 15, in <module>
+    import curses               # windows: unicurses
+  File "C:\Users\deypr\AppData\Local\Programs\Python\Python310\lib\curses\__init__.py", line 13, in <module>
+    from _curses import *
+ModuleNotFoundError: No module named '_curses'
+```
 
