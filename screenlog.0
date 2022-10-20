@@ -1,0 +1,14 @@
+
+------------------------------------------------------------------------------
+Access OctoPrint from a web browser on your network by navigating to any of:
+
+    http://octopi.local
+    http://192.168.1.206
+
+https is also available, with a self-signed certificate.
+------------------------------------------------------------------------------
+OctoPrint version : 1.8.2
+OctoPi version    : 0.18.0
+------------------------------------------------------------------------------
+
+[01;32mpi@octopi[00m:[01;34m~/pybot $[00m exit
