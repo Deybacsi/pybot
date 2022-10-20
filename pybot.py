@@ -56,7 +56,7 @@ except FileNotFoundError:
 
 
 #reading pair config files
-dir_list = os.listdir("pairs")
+dir_list = sorted(os.listdir("pairs"))
 print("Reading pairs")
 dl("Reading pairs")
 dl(str(dir_list))
@@ -207,20 +207,22 @@ def drawchart(threadno,stdscr):
             stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),j,"-")
         stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),0,str(round(pricemax-(pricemax-pricemin)/5*i,2)),curses.A_DIM)
 
-    charheightprice=(pricemax-pricemin)/chartwindow["height"]
+    charheightprice=int((pricemax-pricemin)/chartwindow["height"])
     
     for i in range(0,chartwindow["width"]+1):
         actprice=pricedata[threadno][len(pricedata[threadno])-1-i]
         chartwindowheight=chartwindow["top"]+chartwindow["height"]
         chartwindowwidth =chartwindow["left"]+chartwindow["width"]
-        # candle kanóc
-        for j in range(calcy(actprice["phigh"]), calcy(actprice["plow"])+1):
-            stdscr.addstr(j,chartwindowwidth-i,"|")                    
 
         # MAs
         stdscr.addstr(calcy(actprice["ma99"]),chartwindowwidth-i,"˙",curses.color_pair(9))
         stdscr.addstr(calcy(actprice["ma25"]),chartwindowwidth-i,"˙",curses.color_pair(8))
         stdscr.addstr(calcy(actprice["ma7"]),chartwindowwidth-i,"˙",curses.color_pair(7))
+
+        # candle kanóc
+        for j in range(calcy(actprice["phigh"]), calcy(actprice["plow"])+1):
+            stdscr.addstr(j,chartwindowwidth-i,"|")                    
+
 
         # candle body
         # red
