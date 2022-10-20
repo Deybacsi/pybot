@@ -1,15 +1,53 @@
-
-
-# settings.txt
+# Install
 
 Első futtatás előtt nevezd át a `default_settings.txt`-t `settings.txt` névre.
+
+## Linux:
 
 Valamint:
 ```
 pip install python-binance
 ```
 
-`settings.txt` beállítások:
+Raspberry pi:
+
+Ha nincs pip:
+```
+sudo apt install python-pip
+```
+
+Ha régi a raspbian:
+Error : 
+```
+E: Repository 'http://raspbian.raspberrypi.org/raspbian buster InRelease' changed its 'Suite' value from 'stable' to 'oldstable'
+N: This must be accepted explicitly before updates for this repository can be applied. See apt-secure(8) manpage for details.
+```
+Solution:
+```
+sudo apt-get update --allow-releaseinfo-change
+```
+
+## Windows
+
+Python letöltése innen: https://www.python.org/downloads/
+
+Indítás után "Add python.exe to PATH"-hoz pipa, majd "Install now", és "Disable path length limit", Close
+
+Win+R, szövegmezőbe `cmd` beír, majd enter
+
+A megjelenő cmd ablakba: 
+
+```
+pip install python-binance
+pip install windows-curses
+```
+
+A `pybot.py`-on duplaklikk a gyári windows cmd ablakban indítja a botot. Ha itt üres fekete képernyő fogad, akkor nagyobbra kell venni az ablakméretet. 
+
+
+# settings.txt
+
+Beállítások:
 
 ```
 {
@@ -133,22 +171,6 @@ A test modeban az árfolyam **nem tükrözi** a valós piaci adatokat, mivel ren
 
 Egyelőre csak linuxon lett tesztelve a bot, windowson **elvileg** ugyanúgy működnie kell.
 
-# Windows install
-
-Python letöltése innen: https://www.python.org/downloads/
-
-Indítás után "Add python.exe to PATH"-hoz pipa, majd "Install now", és "Disable path length limit", Close
-
-Win+R, szövegmezőbe `cmd` beír, majd enter
-
-A megjelenő cmd ablakba: 
-
-```
-pip install python-binance
-pip install windows-curses
-```
-
-A `pybot.py`-on duplaklikk a gyári windows cmd ablakban indítja a botot. Ha itt üres fekete képernyő fogad, akkor nagyobbra kell venni az ablakméretet. 
 
 
 
