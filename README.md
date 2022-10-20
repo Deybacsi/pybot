@@ -18,7 +18,8 @@ Binance kereskedőrobot mozgóátlagok alapján. (Nem a hagyományos MA crossing
 - Emelkedő, vagy zuhanó trendnél nem hatékony, vagy egyáltalán nem kereskedik
 - A túl magasra állított profit %, vagy a nem oldalazó trend miatt ritka tranzakciók lehetnek, esetleg olyan vásárlások, amiknek az eladási feltételei soha nem teljesülnek (bentragadsz az adott coinban, amit drágán vettél)
 
-A fentiekből jól látszik, hogy ez a 
+**A fentiekből jól látszik, hogy ez a megoldás RIZIKÓS, úgyhogy a szokásos szöveg: ha élesben játszol, csak annyit kockáztass, amit nem sajnálsz elveszíteni.
+Emellett a készítő semmilyen felelősséget nem vállal a veszteségeidért.**
 
 
 # Működés
