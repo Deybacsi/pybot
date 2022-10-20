@@ -151,5 +151,9 @@ Traceback (most recent call last):
   File "C:\Users\deypr\AppData\Local\Programs\Python\Python310\lib\curses\__init__.py", line 13, in <module>
     from _curses import *
 ModuleNotFoundError: No module named '_curses'
+
+C:\Users\deypr\Documents\GitHub\pybot>pip install unicurses
+ERROR: Could not find a version that satisfies the requirement unicurses (from versions: none)
+ERROR: No matching distribution found for unicurses
 ```
 
