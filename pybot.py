@@ -15,7 +15,6 @@ from binance.client import Client
 import curses               # windows: unicurses
 from curses import wrapper
 
-from matplotlib.pyplot import pause
 
 # thread's data
 pybot_threads=[]

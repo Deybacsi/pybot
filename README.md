@@ -123,13 +123,13 @@ Mivel ez még eléggé work in progress verzió, így a bot megáll, ha
 - settings.txt rossz
 - nincs elég egyenleged (vételnél asset2, eladásnál asset1)
 - nincs internetkapcsolat (néha a Binance sandbox api endpoint is szarakodik) 
-- az ablakméret nem elég nagy, bár ez javarészt már javítva lett
+- az ablakméret nem elég nagy, bár ez javarészt már javítva lett (ha addwstr errorral száll el, akkor nagyobbra kell venni az ablakot)
 - egyéb hibák :)
 
 A test modeban az árfolyam **nem tükrözi** a valós piaci adatokat, mivel rengetegen rángatják a sandboxon belül az árakat fel/le.
 Így a test tradek és tranzakciók csak nagyjából lesznek egálban az aktuális valósággal. Emellett mivel hihetetlen nagy kilengések is vannak az árban, a gyertyák esetlegesen extrém low/high értékei felül vannak írva, és maximálva vannak akt ár +- 0.1%-ban. Erre azért volt szükség, mert pl BTC esetén voltak olyan gyertyák, amiknél a low 18k a high pedig 90k volt, ezzel eléggé tönkretéve a chartot, és lehetetlenné téve a tesztelést.
 
-Egyelőre csak linuxon lett tesztelve a bot, windowson **elvileg** működnie kell.
+Egyelőre csak linuxon lett tesztelve a bot, windowson **elvileg** ugyanúgy működnie kell.
 
 # Windows install
 
@@ -139,21 +139,14 @@ Indítás után "Add python.exe to PATH"-hoz pipa, majd "Install now", és "Disa
 
 Win+R, szövegmezőbe `cmd` beír, majd enter
 
-A megjelenő cmd ablakba: `pip install python-binance`, enter
-
-egyelőre nincs tesztelve, windowson kell(ene) az unicurses
+A megjelenő cmd ablakba: 
 
 ```
-C:\Users\deypr\Documents\GitHub\pybot>pybot.py
-Traceback (most recent call last):
-  File "C:\Users\deypr\Documents\GitHub\pybot\pybot.py", line 15, in <module>
-    import curses               # windows: unicurses
-  File "C:\Users\deypr\AppData\Local\Programs\Python\Python310\lib\curses\__init__.py", line 13, in <module>
-    from _curses import *
-ModuleNotFoundError: No module named '_curses'
-
-C:\Users\deypr\Documents\GitHub\pybot>pip install unicurses
-ERROR: Could not find a version that satisfies the requirement unicurses (from versions: none)
-ERROR: No matching distribution found for unicurses
+pip install python-binance
+pip install windows-curses
 ```
+
+A `pybot.py`-on duplaklikk a gyári windows cmd ablakban indítja a botot. Ha itt üres fekete képernyő fogad, akkor nagyobbra kell venni az ablakméretet. 
+
+
 
