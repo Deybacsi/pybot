@@ -9,12 +9,7 @@ Valamint:
 pip install python-binance
 ```
 
-Raspberry pi:
-
-Ha nincs pip:
-```
-sudo apt install python-pip
-```
+### Raspberry pi:
 
 Ha régi a raspbian:
 Error : 
@@ -25,6 +20,8 @@ N: This must be accepted explicitly before updates for this repository can be ap
 Solution:
 ```
 sudo apt-get update --allow-releaseinfo-change
+sudo apt install python3-pip
+pip3 install python-binance
 ```
 
 ## Windows
