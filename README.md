@@ -1,3 +1,5 @@
+
+
 # settings.txt
 
 Első futtatás előtt nevezd át a `default_settings.txt`-t `settings.txt` névre.
