@@ -63,9 +63,8 @@ dl(str(dir_list))
 j=0
 for i in range(0,len(dir_list)):
     if dir_list[i].find(".txt") > 0:
-        print(' -',dir_list[i])
+        print(j,'-',dir_list[i])
         pybot_threads.append(json.load(open("pairs/"+dir_list[i])))
-        print(j)
         dl(dir_list[i]+' - '+str(pybot_threads[j]))
         pybot_threads[j]["threadname"]=dir_list[i].replace('.txt','')
         pybot_threads[j]["asset1balance"]=0
@@ -302,7 +301,8 @@ def drawwindow(stdscr):
     # order list
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+7 ,pybot_threads[actualthread]["asset1"])
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+16,pybot_threads[actualthread]["asset2"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+23,"P/L-"+str(pybot_threads[actualthread]["minprofit"])+'%')
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+25,"Price")
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+34,"P/L "+str(pybot_threads[actualthread]["minprofit"])+'%')
     for i in range(0,orderwindow["height"]):
         stdscr.addstr(orderwindow["top"]+1+i,orderwindow["left"],'|')
         
@@ -314,7 +314,7 @@ def drawwindow(stdscr):
                 profitloss=round((float(actorder["cummulativeQuoteQty"])/float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1]["cummulativeQuoteQty"])-1)*100,2)
                 if profitloss>=0: ordercolor=curses.color_pair(3)
                 else: ordercolor=curses.color_pair(2)
-                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+30-len(str(profitloss)),str(profitloss)+'%',ordercolor)
+                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+39-len(str(profitloss)),str(profitloss)+'%',ordercolor)
 
             #dl(str(actorder))
             # buy/sell
@@ -328,6 +328,11 @@ def drawwindow(stdscr):
             # asset2
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
                 -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)
+            # price
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+32
+                -len(str(round(float(actorder["fills"][0]["price"]),2))), str(round(float(actorder["fills"][0]["price"]),2)),ordercolor)
+
+            
 
 def loadorders(threadno):
     pybot_threads[threadno]["orders"]=[]
@@ -440,12 +445,12 @@ def main(stdscr):
                 saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
                 pass
 
-                
+        drawwindow(stdscr)
         start = time.time()
         elapsed=0
         while elapsed < refreshtime:
             elapsed = int(time.time() - start)
-            drawwindow(stdscr)
+            
             stdscr.addstr(0,curses.COLS-3,"   ",curses.color_pair(1))
             stdscr.addstr(0,curses.COLS-3,str(60-elapsed),curses.color_pair(1))
             stdscr.refresh()
@@ -459,8 +464,8 @@ def main(stdscr):
                 if pressedkey-48<len(pybot_threads):
                     actualthread = pressedkey-48
                     #dl(str(actualthread))
-                    #drawwindow(stdscr)
-                    #stdscr.refresh()
+                    drawwindow(stdscr)
+                    stdscr.refresh()
 
             # ESC
             if pressedkey==27:

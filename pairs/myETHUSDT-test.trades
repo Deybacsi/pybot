@@ -74,3 +74,53 @@
     ]
 }
 -#-#-#-#-
+{
+    "symbol": "ETHUSDT",
+    "orderId": 4720709,
+    "orderListId": -1,
+    "clientOrderId": "RW3lYQuOF4YEpzgkzJa7hF",
+    "transactTime": 1666321250762,
+    "price": "0.00000000",
+    "origQty": "0.01173000",
+    "executedQty": "0.01173000",
+    "cummulativeQuoteQty": "15.13123080",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "SELL",
+    "fills": [
+        {
+            "price": "1289.96000000",
+            "qty": "0.01173000",
+            "commission": "0.00000000",
+            "commissionAsset": "USDT",
+            "tradeId": 602887
+        }
+    ]
+}
+-#-#-#-#-
+{
+    "symbol": "ETHUSDT",
+    "orderId": 4776922,
+    "orderListId": -1,
+    "clientOrderId": "PHgmdLSwePCsGwDxCL7xRw",
+    "transactTime": 1666335602889,
+    "price": "0.00000000",
+    "origQty": "0.01166000",
+    "executedQty": "0.01166000",
+    "cummulativeQuoteQty": "14.98823040",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "BUY",
+    "fills": [
+        {
+            "price": "1285.44000000",
+            "qty": "0.01166000",
+            "commission": "0.00000000",
+            "commissionAsset": "ETH",
+            "tradeId": 605497
+        }
+    ]
+}
+-#-#-#-#-
