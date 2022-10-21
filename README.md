@@ -19,8 +19,10 @@ Binance kereskedőrobot mozgóátlagok alapján. (Nem a hagyományos MA crossing
 - A túl magasra állított profit %, vagy a nem oldalazó trend miatt ritka tranzakciók lehetnek, esetleg olyan vásárlások, amiknek az eladási feltételei soha nem teljesülnek (bentragadsz az adott coinban, amit drágán vettél)
 
 **A fentiekből jól látszik, hogy ez a megoldás RIZIKÓS, úgyhogy a szokásos szöveg: ha élesben játszol, csak annyit kockáztass, amit nem sajnálsz elveszíteni.
-Emellett a készítő semmilyen felelősséget nem vállal a veszteségeidért.**
+Semmilyen felelősséget nem vállalok a veszteségeidért.**
 
+## Jelenleg ajánlott test mode-ban futtatni!
+## Éles használata csak saját felelősségre!
 
 # Működés
 
@@ -49,7 +51,7 @@ A színes vonalak a mozgóátlagok. Ha beesik az árfolyam alájuk, az egy **leh
 Mivel nem lenne szerencsés, ha egy-egy hirtelen leszúrás, vagy nagyon kis beesés egyből egy vételt generálna, így érdemes várni még egy kicsit. Hirtelen leszúrásnál lehetséges, hogy mire a bot eszmél (percenként néz árat), addigra az ár már teljesen máshol jár.
 Emellett, ha az MA-k alá csak nagyon kicsivel esik az ár, és egyből veszünk, vagy fordított esetben eladunk, az rontja a későbbi profitunkat is. Érdemes a valamivel tartósabb kilengésekre várni, mert értelemszerűen minél olcsóbban szeretnénk venni, és minél drágábban eladni.
 
-A képen látható `candlestobuy` beállítás szerint 3 gyertyányit várunk, mindháromnak az átlagok alatt kell lennie, mire a következőnél *valahol* egy tényleges vásárlás fog történni. (Amikor a bot majd épp frissíti az árakat)
+A képen látható `candlestobuy` beállítás szerint 3 gyertyányit várunk, mindháromnak az átlagok alatt kell zárnia, mire a következőnél *valahol* egy tényleges vásárlás fog történni. (Amikor a bot majd épp frissíti az árakat)
 
 Párja a `candlestosell`, ami jelenleg szintén 3 gyertyányit vár, mire a következő feltétel megvizsgálásra kerül: az eladási ár magasabb legyen, mint a vételi. (`minprofit` beállítás)
 
@@ -74,17 +76,19 @@ Eladás után nincs vételi szignál, hiszen az ár sosem esik be az MA-k alá.
 
 Amikor az oldalazás visszaáll, a bot folytatja a kereskedést.
 
-Ilyen szituációknál viszont frusztráló lehet a rengeteg kihagyott lehetőség.
+Ilyen szituációknál viszont frusztráló lehet a rengeteg kihagyott lehetőség :)
 
 ## Felület
 
 ![trading bot gui](docs/gui.png)
 
+Kicsit még szellős, sok az üres rész, a későbbiekben majd ez is fejlesztve lesz.
+
 **Kilépés**: ESC
 
 **Kereskedési párok váltása**: számbillentyűk 0-9 (10-nél több threadet elvben képes kezelni, de UI kijelzés nélkül)
 
-Mivela szálak számai a filenevek abc sorrendjéből adódnak, így a számozás hozzárendelhető direkt filenevekhez, az alábbi file elnevezésekkel:
+Mivela szálak számai a filenevek abc sorrendjéből adódnak, így a számozás hozzárendelhető direkt filenevekhez, az alábbi elnevezésekkel:
 
 ```
 0-btcusdt.txt
@@ -97,11 +101,13 @@ Mivela szálak számai a filenevek abc sorrendjéből adódnak, így a számozá
 
 # Telepítés
 
-Első futtatás előtt nevezd át a `default_settings.txt`-t `settings.txt` névre.
+Első futtatás előtt nevezd át a `default_settings.txt`-t `settings.txt` névre, majd töltsd ki a megfelelő adatokkal. (Lásd lent)
 
-Érdemes mindent kitörölni a `pairs` mappából, hogy tiszta lappal kezdhess :)
+Érdemes mindent kitörölni a `pairs` mappából, hogy tiszta lappal kezdhess :) 
 
-Az ott található `BTCUSDT.example` egy minta a kereskedési párok beállításához.
+Az ott található `BTCUSDT.example` egy minta a kereskedési párok beállításához. Ezt átnevezve, lemásolva hozhatod létre a párjaidat.
+
+A file neve bármi lehet, csak annyi a lényeges, hogy .txt kiterjesztése legyen. Más fileokat nem vesz figyelembe a bot.
 
 Minden pár külön saját beállítás filet igényel.
 
@@ -129,7 +135,7 @@ pip3 install python-binance
 
 ## Windows
 
-Python letöltése innen: https://www.python.org/downloads/
+Python letöltése: https://www.python.org/downloads/
 
 Indítás után "Add python.exe to PATH"-hoz pipa, majd "Install now", és "Disable path length limit", Close
 
@@ -142,7 +148,7 @@ pip install python-binance
 pip install windows-curses
 ```
 
-A `pybot.py`-on duplaklikk a gyári windows cmd ablakban indítja a botot. Ha itt üres fekete képernyő fogad, akkor nagyobbra kell venni az ablakméretet. 
+A `pybot.py`-on duplaklikk a gyári windows cmd ablakban indítja a botot. Ha itt üres fekete képernyő fogad, akkor nagyobbra kell állítanod az ablak méretét. 
 
 
 # settings.txt
@@ -171,7 +177,7 @@ Tartalma:
 
     Keygenerálás után a létrejövő Binance sandbox accountba minden kereskedhető coinból leoszt a rendszer egy szép adagot egyenlegként. Pl 1BTC, 10 ETH, 10 000 USDT, stbstb.
 
-    Az egyenlegek, és egyéb adatok havonta resetelődnek az eredeti állapotra!
+    Az egyenlegek, és egyéb adatok havonta resetelődnek az eredeti állapotra! Ezt a Binance automatikusan végzi, a botnak nincs rá hatása.
 
 - **false**: VALÓS TRADING, **VALÓS PÉNZZEL!**
 
@@ -181,7 +187,7 @@ Tartalma:
 
     A key restrictionsnél az *"Enable Spot & Margin Trading"* engedélyt meg kell adni, különben a bot nem tud kereskedni.
     
-    MÁS ENGEDÉLY NEM SZÜKSÉGES! Ajánlott semmi mást nem engedélyezni.
+    MÁS ENGEDÉLY NEM SZÜKSÉGES! Sőt, ajánlott semmi mást nem engedélyezni.
     
     A létrehozott key alapállapotban **90 napig érvényes**, utána kézzel meg kell majd ezen az oldalon hosszabbítani.
 
@@ -194,11 +200,13 @@ A bot több párral is tud egyszerre kereskedni, ezeknek a beállításait a `pa
 A bot "thread" névvel jelöli a különböző beállított párokat.
 Lehetséges ugyanolyan párokat létrehozni, különböző idő/profit beállításokkal. (Teljesen ugyanolyannal is lehet, mint egy már létező, de annak sok értelme nincs :D )
 
-A beállítható párok száma **elvben** végtelen, de ennek határt szabnak a számítógépben lévő memória, az internetkapcsolat, és többek között a Binance API query limitjei is. Emlékeim szerint query/IP limit is van.
+A beállítható párok száma **elvben** végtelen, de ennek határt szabnak a számítógépben lévő memória, az internetkapcsolat, és többek között a Binance API query limitjei is. Talán query/IP limit is van.
+
+Emellett az adatok lekérése láthatóen nem túl gyors, így 20-50-100 párnál a bot működése jelentősen belassulhat. Mire lehúzza az árakat, azok már rég elvavultak, így múltbeli adatokkal dolgozik, ami veszteséget okozhat.
 
 ## pairs/x.txt
 
-A file neve bármi lehet, csak annyi a lényeges, hogy .txt kiterjesztése legyen. Más fileokat nem vesz figyelembe a bot. (pl a `BTCUSDT.example`-t, ami mintaként használható)
+A file neve bármi lehet, csak annyi a lényeges, hogy .txt kiterjesztése legyen. Más fileokat nem vesz figyelembe a bot. (pl a `BTCUSDT.example`-t sem, ami mintaként használható)
 
 A file nevével fog a bot hivatkozni az adott kereskedési párunkra a felületen.
 
@@ -225,13 +233,13 @@ A "tőke" összege, amivel a bot gazdálkodhat.
 
 A fenti példa alapján ez 15 USDT, vételi szándéknál ennyiért próbál meg majd BTC-t venni. Eladásnál értelemszerűen a 15 USDT-ért vett BTC-t próbálja meg majd eladni, drágábban.
 
+Nem érdemes a Binance által engedett minimális order szintre állítani. Pl ha veszel 10 USDT-ért ETH-t, ebből lejön a trading fee, vagyis kapsz 9.9$-nyi eth-t. Az eladáshoz viszont min 10$-nyi ETH kellene, az order beragadt. (A számok most csak példa jellegűek voltak, nézz utána a minimum összegeknek)
+
 **candlestobuy, candlestosell:**
 
 Hány gyertyányi ideig legyen az ár a mozgóátlagok alatt (candlestobuy), vagy felett (candlestosell)
 
 Jelen esetben 15 perces gyertyákkal dolgozik, vagyis egy candlestobuy=3 azt jelenti, hogy az árnak 3*15=45 percig az MA-k alatt kell lennie, hogy a bot vásároljon.
-
-Az értelme az, hogy tartós árfolyam esésnél (trendnél) vásároljon a bot, és ne egy-egy hirtelen leszúrásnál.
 
 Ugyanez fordítva eladásnál, 3*15 percig az MA-k fölött tartózkodó árnál a bot elad, HA:
 
@@ -258,7 +266,7 @@ Lehetséges a `minprofit` értékét nullára is állítani, így a nagyobb esé
 
 Előnye: Ha sokáig tartó lefelé trend van, nem ragad be a megvett coinunk, várva a profitra. Az esés utáni esetleges oldalazásnál az első sell valószínűleg veszteséges, viszont utána ugyanúgy kereskedik tovább a bot. Remélhetőleg az így keletkezett veszteséget a további tradek kiegyenlítik.
 
-Generál némi veszteséget, viszont időben több tranzakciót csinál, nagyobb az esély a profitra.
+Generál némi veszteséget, viszont időben több tranzakciót csinál, így nagyobb az esély a profitra.
 
 **stopped** - jelenleg not implemented
 
@@ -266,22 +274,22 @@ Hogy ne kelljen fileokat törölgetni/moveolni, itt kikapcsolható (lesz) az ado
 
 ## pairs/x.trades
 
-A `.txt` konfig fileokban megadott párokkal eddig végzett tranzakciók adatai (majdnem) JSON formátumban, lefele időrendben. 
+Ezeket a fileokat a bot létrehozza, és a kereskedés folyamán szépen feltölti adatokkal.
 
-A bot ezekből dolgozik, és tudja, hogy éppen venni vagy eladni kell, valamint ezek adataiból számolja a profit %-okat. Kézzel szerkesztésük nem ajánlott, ha nem tudod mit csinálsz.
+A `.txt` konfig fileokban megadott párokkal eddig végzett tranzakciók adatait tartalmazzák (majdnem) JSON formátumban, lefele időrendben. 
 
-Ha a file nem létezik, a bot létrehozza, és a kereskedés folyamán szépen feltölti adatokkal.
+A bot ezekből dolgozik, és tudja, hogy éppen venni vagy eladni kell, valamint ezek adataiból számolja a profit %-okat. Kézzel szerkesztésük nem ajánlott.
+
+
 
 Hasznos lehet majd jövőbeni összesített statisztikákhoz is, stb.
-Egy esetleges fent említett zuhanó trend árfolyam beragadásnál a legutolsó BUY ordert "kézzel" kitörölve a bot "elfelejti" azt, és így nem akar majd sell-el próbálkozni, hanem megint venni akar majd. 
+Egy esetleges fent említett zuhanó trend árfolyam beragadásnál a legutolsó BUY ordert "kézzel" kitörölve a bot "elfelejti" azt, és így nem vár az eladási feltételekre, hanem a következő lehetőségnél megint vesz majd. 
 
 ## debug.log, candledata.log
 
-Szemét, debug fileok, 
+Szemét, debug fileok.
 
 # Tudnivalók
-
-
 
 Bármelyik file (`.txt` vagy `.trades`) szerkesztése után érdemes a botot újraindítani. (Bár a `.trades`-eket beolvassa percenként)
 
@@ -289,15 +297,15 @@ Mivel ez még eléggé work in progress verzió, így a bot megáll, ha
 
 - fileok hiányoznak
 - settings.txt rossz
-- nincs elég egyenleged (vételnél asset2, eladásnál asset1)
+- nincs elég egyenleged (vételnél asset2, eladásnál asset1. ne a minimum limitekkel kereskedj élesben)
 - nincs internetkapcsolat (néha a Binance sandbox api endpoint is szarakodik) 
-- az ablakméret nem elég nagy, bár ez javarészt már javítva lett (ha addwstr errorral száll el, akkor nagyobbra kell venni az ablakot)
+- az ablakméret nem elég nagy, bár ez javarészt már javítva lett (ha addwstr errorral száll el, akkor nagyobbra kell venni az ablakot) legegyszerűbb teljes méretűre állítani, az biztosan elég
 - egyéb hibák :)
 
-A test modeban az árfolyam **nem tükrözi** a valós piaci adatokat, mivel rengetegen rángatják a sandboxon belül az árakat fel/le.
-Így a test tradek és tranzakciók csak nagyjából lesznek egálban az aktuális valósággal. Emellett mivel hihetetlen nagy kilengések is vannak az árban, a gyertyák esetlegesen extrém low/high értékei felül vannak írva, és maximálva vannak akt ár +- 0.1%-ban. Erre azért volt szükség, mert pl BTC esetén voltak olyan gyertyák, amiknél a low 18k a high pedig 90k volt, ezzel eléggé tönkretéve a chartot, és lehetetlenné téve a tesztelést.
+A test modeban az árfolyam **nem tükrözi pontosan** a valós piaci adatokat, mivel rengetegen rángatják a sandboxon belül az árakat fel/le.
+Így a test tradek és tranzakciók csak nagyjából lesznek egálban az aktuális valósággal. Emellett mivel hihetetlen nagy kilengések is vannak az árban, a gyertyák esetlegesen extrém low/high értékei a lekérdezés után felül vannak írva, és maximálva vannak **aktuális ár +- 0.1%**-ban. Erre azért volt szükség, mert pl BTC esetén voltak olyan gyertyák, amiknél a low 18k a high pedig 90k volt, ezzel eléggé tönkretéve a chartot, és lehetetlenné téve a tesztelést.
 
-Egyelőre csak linuxon lett tesztelve a bot, windowson **elvileg** ugyanúgy működnie kell.
+Egyelőre csak linuxon lett hosszabban tesztelve a bot, windowson **elvileg** ugyanúgy működnie kell.
 
 ## Linux scriptek
 
