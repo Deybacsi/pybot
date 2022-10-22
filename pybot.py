@@ -189,7 +189,7 @@ def drawchart(threadno,stdscr):
 
     def calcy(theprice):
         chartwindowheight=chartwindow["top"]+chartwindow["height"]
-        they=chartwindowheight-int((theprice-pricemin)/charheightprice+0.5)
+        they=int(chartwindowheight-(theprice-pricemin)/charheightprice+0.5)
         if they<chartwindow["top"]: they=0                                                                       # overwritten by header row
         if they>chartwindow["top"]+chartwindow["height"]: they=chartwindow["top"]+chartwindow["height"]+2     # overwritten by ^ - v row
         return they
@@ -206,8 +206,8 @@ def drawchart(threadno,stdscr):
             stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),j,"-")
         stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),0,str(round(pricemax-(pricemax-pricemin)/5*i,2)),curses.A_DIM)
 
-    charheightprice=int((pricemax-pricemin)/chartwindow["height"])
-    
+    charheightprice=(pricemax-pricemin)/chartwindow["height"]
+    dl (str(threadno)+' '+str(pricemin)+','+str(pricemax)+','+str(charheightprice))
     for i in range(0,chartwindow["width"]+1):
         actprice=pricedata[threadno][len(pricedata[threadno])-1-i]
         chartwindowheight=chartwindow["top"]+chartwindow["height"]
@@ -473,6 +473,8 @@ def main(stdscr):
             # window resize
             if pressedkey==curses.KEY_RESIZE:
                 curses.LINES, curses.COLS = stdscr.getmaxyx()
+                drawwindow(stdscr)
+                stdscr.refresh()
 
    
 

@@ -73,3 +73,28 @@
     ]
 }
 -#-#-#-#-
+{
+    "symbol": "BTCUSDT",
+    "orderId": 8502199,
+    "orderListId": -1,
+    "clientOrderId": "M4tyiD68QDnT2j08ROWeqB",
+    "transactTime": 1666368955164,
+    "price": "0.00000000",
+    "origQty": "0.00078800",
+    "executedQty": "0.00078800",
+    "cummulativeQuoteQty": "15.09618880",
+    "status": "FILLED",
+    "timeInForce": "GTC",
+    "type": "MARKET",
+    "side": "SELL",
+    "fills": [
+        {
+            "price": "19157.60000000",
+            "qty": "0.00078800",
+            "commission": "0.00000000",
+            "commissionAsset": "USDT",
+            "tradeId": 3036315
+        }
+    ]
+}
+-#-#-#-#-
