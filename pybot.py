@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.2"
+programversion="v0.1.02"
 
+print(programname, programversion)
 
 #from http import client
 #from multiprocessing import current_process
@@ -12,11 +13,11 @@ import json
 import time
 import datetime
 from datetime import timezone
-from binance.client import Client
+import urllib.request
 import curses               # windows: windows-curses
 from curses import wrapper
-
-
+print("Starting Binance module")
+from binance.client import Client
 
 # thread's data
 pybot_threads=[]
@@ -36,6 +37,26 @@ statswindow={"top" : 2,"left": 0, "width":0,"height":0}
 orderwindow={"top" : 2,"left": 0,"width":0,"height":0}
 
 os.environ.setdefault('ESCDELAY', '25')     # set esc key delay to 25ms
+
+print("Searching for updates")
+print("---------------------")
+for line in urllib.request.urlopen("https://raw.githubusercontent.com/Deybacsi/pybot/main/version.no"):
+    remoteversion=line.decode('utf-8')
+    print("Your version:",programversion)
+    print("New  version:",remoteversion)          
+    if programversion<remoteversion:
+        print("-------------------------------------------------")
+        print("You are using an outdated version, please update!")
+        print("-------------------------------------------------")
+
+        print("Download from: https://github.com/Deybacsi/pybot")
+        print("(git pull?)")
+        exit()
+        
+
+
+
+
 
 
 v=open('version.no','w'); v.write(programversion); v.close()
