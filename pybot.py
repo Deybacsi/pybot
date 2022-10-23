@@ -1,19 +1,21 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1"
+programversion="v0.1.2"
 
 
-from http import client
+#from http import client
+#from multiprocessing import current_process
+
 import os
 import json
-from multiprocessing import current_process
 import time
 import datetime
 from datetime import timezone
 from binance.client import Client
 import curses               # windows: windows-curses
 from curses import wrapper
+
 
 
 # thread's data
@@ -34,6 +36,9 @@ statswindow={"top" : 2,"left": 0, "width":0,"height":0}
 orderwindow={"top" : 2,"left": 0,"width":0,"height":0}
 
 os.environ.setdefault('ESCDELAY', '25')     # set esc key delay to 25ms
+
+
+v=open('version.no','w'); v.write(programversion); v.close()
 
 # init debug log, and dl()
 d=open('debug.log','w'); d.close()
@@ -173,6 +178,8 @@ def getcandles(threadno):
             pricedata[threadno][i]["above"]=True
                 
         #print(i,pricedata[threadno][i]["popen"], pricedata[threadno][i]["ma7"],pricedata[threadno][i]["ma25"],pricedata[threadno][i]["ma99"],pricedata[threadno][i]["below"],pricedata[threadno][i]["above"])
+    """
+    # push everything to candledata.log
     fcd=open('candledata.log','a')
     for i in range(0,len(candles)):
         
@@ -183,6 +190,7 @@ def getcandles(threadno):
             +str(pricedata[threadno][i]["ma7"])+' '+str(pricedata[threadno][i]["ma25"])+' '+str(pricedata[threadno][i]["ma99"])+'|B:'+str(pricedata[threadno][i]["below"])+' A:'+str(pricedata[threadno][i]["above"])+chr(13))
 
     fcd.close()
+    """
 
 #draw the price chart for 1 thread
 def drawchart(threadno,stdscr):
