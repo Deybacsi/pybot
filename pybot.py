@@ -12,7 +12,7 @@ import time
 import datetime
 from datetime import timezone
 from binance.client import Client
-import curses               # windows: unicurses
+import curses               # windows: windows-curses
 from curses import wrapper
 
 
