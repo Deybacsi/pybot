@@ -108,11 +108,9 @@ Mivela szálak számai a filenevek abc sorrendjéből adódnak, így a számozá
 
 Első futtatás előtt nevezd át a `default_settings.txt`-t `settings.txt` névre, majd töltsd ki a megfelelő adatokkal. (Lásd lent)
 
-Érdemes mindent kitörölni a `pairs` mappából, hogy tiszta lappal kezdhess :) 
+A `pairs`-ben található `BTCUSDT.example` egy minta a kereskedési párok beállításához. Ezt lemásolva, átnevezve `valami.txt`-re hozhatod létre a párjaidat.
 
-Az ott található `BTCUSDT.example` egy minta a kereskedési párok beállításához. Ezt átnevezve, lemásolva hozhatod létre a párjaidat.
-
-A file neve bármi lehet, csak annyi a lényeges, hogy .txt kiterjesztése legyen. Más fileokat nem vesz figyelembe a bot.
+A file neve bármi lehet, de `.txt` kiterjesztése legyen. Más fileokat nem vesz figyelembe a bot.
 
 Minden pár külön saját beállítás filet igényel.
 

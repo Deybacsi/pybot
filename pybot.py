@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.02"
+programversion="v0.1.03"
 
 print(programname, programversion)
 
@@ -163,8 +163,8 @@ def getcandles(threadno):
         if settings["testmode"]:
             #pricedata[threadno][i]["phigh"] =float(candles[i][1])
             #pricedata[threadno][i]["plow"]  =float(candles[i][1])
-            if pricedata[threadno][i]["phigh"]>pricedata[threadno][i]["popen"]*1.01: pricedata[threadno][i]["phigh"]=pricedata[threadno][i]["popen"]*1.01
-            if pricedata[threadno][i]["plow"]<pricedata[threadno][i]["popen"]*0.99: pricedata[threadno][i]["plow"]=pricedata[threadno][i]["popen"]*0.99
+            if pricedata[threadno][i]["phigh"]>pricedata[threadno][i]["pclose"]*1.01: pricedata[threadno][i]["phigh"]=pricedata[threadno][i]["pclose"]*1.01
+            if pricedata[threadno][i]["plow"]<pricedata[threadno][i]["pclose"]*0.99: pricedata[threadno][i]["plow"]=pricedata[threadno][i]["pclose"]*0.99
 
     # calc MAs
     print("MA7  ", sep='',end='')
@@ -172,7 +172,7 @@ def getcandles(threadno):
         if i % 10 == 0: print(".", sep='',end='')
         ma7sum=0
         for j in range(0,7):
-            ma7sum+=pricedata[threadno][i-j]["popen"]
+            ma7sum+=pricedata[threadno][i-j]["pclose"]
         pricedata[threadno][i]["ma7"]=ma7sum/7
     print(""+chr(13))
     print("MA25 ", sep='',end='')
@@ -180,7 +180,7 @@ def getcandles(threadno):
         if i % 10 == 0: print(".", sep='',end='')
         ma25sum=0
         for j in range(0,25):
-            ma25sum+=pricedata[threadno][i-j]["popen"]
+            ma25sum+=pricedata[threadno][i-j]["pclose"]
         pricedata[threadno][i]["ma25"]=ma25sum/25
     print(""+chr(13))
     print("MA99 ", sep='',end='')
@@ -188,14 +188,14 @@ def getcandles(threadno):
         if i % 10 == 0: print(".", sep='',end='')
         ma99sum=0
         for j in range(0,99):
-            ma99sum+=pricedata[threadno][i-j]["popen"]
+            ma99sum+=pricedata[threadno][i-j]["pclose"]
         pricedata[threadno][i]["ma99"]=ma99sum/99
     print(chr(13))
     # calc above&below indicators    
     for i in range(0,len(candles)):
-        if pricedata[threadno][i]["popen"]<pricedata[threadno][i]["ma7"] and pricedata[threadno][i]["popen"]<pricedata[threadno][i]["ma25"] and pricedata[threadno][i]["popen"]<pricedata[threadno][i]["ma99"]:
+        if pricedata[threadno][i]["pclose"]<pricedata[threadno][i]["ma7"] and pricedata[threadno][i]["pclose"]<pricedata[threadno][i]["ma25"] and pricedata[threadno][i]["pclose"]<pricedata[threadno][i]["ma99"]:
             pricedata[threadno][i]["below"]=True
-        if pricedata[threadno][i]["popen"]>pricedata[threadno][i]["ma7"] and pricedata[threadno][i]["popen"]>pricedata[threadno][i]["ma25"] and pricedata[threadno][i]["popen"]>pricedata[threadno][i]["ma99"]:
+        if pricedata[threadno][i]["pclose"]>pricedata[threadno][i]["ma7"] and pricedata[threadno][i]["pclose"]>pricedata[threadno][i]["ma25"] and pricedata[threadno][i]["pclose"]>pricedata[threadno][i]["ma99"]:
             pricedata[threadno][i]["above"]=True
                 
         #print(i,pricedata[threadno][i]["popen"], pricedata[threadno][i]["ma7"],pricedata[threadno][i]["ma25"],pricedata[threadno][i]["ma99"],pricedata[threadno][i]["below"],pricedata[threadno][i]["above"])
@@ -513,13 +513,14 @@ wrapper(main)
 
 
 """
-
+11-23
+USDT:  94.25064413
 (0,0) to (curses.LINES - 1, curses.COLS - 1).
 
 
 https://binance-docs.github.io/apidocs/spot/en/#introduction
 https://testnet.binance.vision/
-
+curl https://testnet.binance.vision/api/v3/exchangeInfo
 
 
 pip install python-binance
