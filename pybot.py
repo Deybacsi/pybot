@@ -41,14 +41,14 @@ os.environ.setdefault('ESCDELAY', '25')     # set esc key delay to 25ms
 v=open('version.no','w'); v.write(programversion); v.close()
 
 # init debug log, and dl()
-d=open('debug.log','w'); d.close()
+d=open('log/debug.log','w'); d.close()
 def dl(str):
-    d=open('debug.log','a')
+    d=open('log/debug.log','a')
     d.write(str+chr(13))
     d.close()
 
 # temporary candledata, only for debug
-fcd=open('candledata.log','w'); fcd.close()
+fcd=open('log/candledata.log','w'); fcd.close()
 
 # checking settings.txt
 try:
@@ -180,7 +180,7 @@ def getcandles(threadno):
         #print(i,pricedata[threadno][i]["popen"], pricedata[threadno][i]["ma7"],pricedata[threadno][i]["ma25"],pricedata[threadno][i]["ma99"],pricedata[threadno][i]["below"],pricedata[threadno][i]["above"])
     """
     # push everything to candledata.log
-    fcd=open('candledata.log','a')
+    fcd=open('log/candledata.log','a')
     for i in range(0,len(candles)):
         
         fcd.write(str(threadno)+' '+str(i)+' '+str(pricedata[threadno][i]["popen"])+' '
