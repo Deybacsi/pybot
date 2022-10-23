@@ -66,8 +66,13 @@ A vétel után az ár tovább esik, majd oldalaz. Így az MA-k idővel ellaposod
 
 2 lehetőség van:
 
-- várunk, amíg az ár a vételi ár fölé visszamegy (vagy igen, vagy nem)
-- eladunk veszteséggel, és az oldalazásból elkezdünk profitálni megint
+- Ha `minprofit` > 0 -> várunk addig, amíg az ár a vételi ár fölé visszamegy, hogy profitunk legyen
+- Ha `minprofit` = 0 -> elad**hat**unk veszteséggel, és **ha mázlink van**, az oldalazásból elkezdünk profitálni megint, mint az alábbi képen.
+
+    Látszik, hogy az ár még mindig nem érte el a kezdeti 19 282$-os szintet, de az esés utáni oldalazásnál csinált 2 sikeres tradet, amivel már pluszban vagyunk. (ez nem garantált, vagyis lehetséges további veszteség is, ha tovább esik az ár!)
+    ![binance bear trend example with loss then profit](docs/btcusdt-orders-with-loss-then-profit.png)
+
+Viszonylag jó taktika lehet olyan párokkal kereskedni, amiknek hiszünk a hosszútávú sikerében, így nem zavar, ha beragadunk egy magasabban árfolyamon. (Jelen esetben pl BTC-ben)
 
 ### Emelkedő trendnél
 ![binance bull trend example](docs/binance-example-bull.png)
@@ -329,3 +334,6 @@ ESC megnyomásával a bot kilép, és így a screen session is véget ér!
 
 
 
+
+
+[def]: docs/binance-example-l
