@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.03"
+programversion="v0.1.04"
 
 print(programname, programversion)
 
@@ -128,9 +128,28 @@ else: client = Client(settings["apikey"], settings["apisecret"]); print("Connect
 
 # get current exchange balances for all threads
 def getbalances():
-    for actthread in range(0,len(pybot_threads)):
-        pybot_threads[actthread]["asset1balance"] = client.get_asset_balance(asset=pybot_threads[actthread]["asset1"])["free"]
-        pybot_threads[actthread]["asset2balance"] = client.get_asset_balance(asset=pybot_threads[actthread]["asset2"])["free"]
+    # always query 0.thread's pairs
+    pybot_threads[0]["asset1balance"] = client.get_asset_balance(asset=pybot_threads[0]["asset1"])["free"]
+    pybot_threads[0]["asset2balance"] = client.get_asset_balance(asset=pybot_threads[0]["asset2"])["free"]  
+    # clear following threads balances
+    for actthread in range(1,len(pybot_threads)):
+        pybot_threads[actthread]["asset1balance"]=pybot_threads[actthread]["asset2balance"]="0"    
+    # check following threads for duplicates
+    for actthread in range(1,len(pybot_threads)):
+        getasset1=getasset2=False
+        pybot_threads[actthread]["asset1balance"]=pybot_threads[actthread]["asset2balance"]="0"
+        # check previous threads, to not query an existing coin's balance multiple times
+        for j in range(0,actthread):
+            if pybot_threads[actthread]["asset1"]==pybot_threads[j]["asset1"]: pybot_threads[actthread]["asset1balance"]=pybot_threads[j]["asset1balance"]
+            else: getasset1=True
+            if pybot_threads[actthread]["asset2"]==pybot_threads[j]["asset2"]: pybot_threads[actthread]["asset2balance"]=pybot_threads[j]["asset2balance"]
+            else: getasset2=True
+            
+        # if balance query needed
+        if getasset1: pybot_threads[actthread]["asset1balance"] = client.get_asset_balance(asset=pybot_threads[actthread]["asset1"])["free"]
+        if getasset2: pybot_threads[actthread]["asset2balance"] = client.get_asset_balance(asset=pybot_threads[actthread]["asset2"])["free"]
+        #pybot_threads[actthread]["asset1balance"] = client.get_asset_balance(asset=pybot_threads[actthread]["asset1"])["free"]
+        #pybot_threads[actthread]["asset2balance"] = client.get_asset_balance(asset=pybot_threads[actthread]["asset2"])["free"]
 
 # get candle data for 1 thread
 def getcandles(threadno):
@@ -435,18 +454,18 @@ def main(stdscr):
 
         stdscr.clear()
         stdscr.refresh()
-        getbalances()
         print("Getting balances and symbol info"+chr(13))
+        getbalances()        
         for i in range(0,len(pybot_threads)):
             print(pybot_threads[i]["asset1"],':',pybot_threads[i]["asset1balance"]+chr(13))
             print(pybot_threads[i]["asset2"],':',pybot_threads[i]["asset2balance"]+chr(13))
-            pybot_threads[i]["symbol_info"]=client.get_symbol_info(pybot_threads[i]["asset1"]+pybot_threads[i]["asset2"])
-            print(pybot_threads[i]["symbol_info"]["symbol"]+' Status: '+pybot_threads[i]["symbol_info"]["status"]+' SpotAllowed: '+str(pybot_threads[i]["symbol_info"]["isSpotTradingAllowed"])+chr(13))
+            #pybot_threads[i]["symbol_info"]=client.get_symbol_info(pybot_threads[i]["asset1"]+pybot_threads[i]["asset2"])
+            #print(pybot_threads[i]["symbol_info"]["symbol"]+' Status: '+pybot_threads[i]["symbol_info"]["status"]+' SpotAllowed: '+str(pybot_threads[i]["symbol_info"]["isSpotTradingAllowed"])+chr(13))
             #dl(str(pybot_threads[i]["symbol_info"]))
 
         for actthread in range(0,len(pybot_threads)):
             getcandles(actthread)
-            print("Get current price")
+            print("Get current price"+chr(13))
             pybot_threads[actthread]["currentprice"] = float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
             #dl(str(pybot_threads[actthread]["currentprice"]))
 
