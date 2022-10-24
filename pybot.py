@@ -505,26 +505,23 @@ def main(stdscr):
                 pass
 
             # sell order with minprofit checking
-#            if (oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
-#                    and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
+            if (oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
+                    and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
                 #dl(str(lastorder))
                 #dl(str(calcorderqty(lastorder)))
-            coininfo = client.get_symbol_info(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
-            dl(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
-            dl(str(coininfo["filters"]))
-            sellingqty=0.0
-            lastorderqty=calcorderqty(lastorder)
-            # round selling qty to the min needed number of decimals
-            for i in range(0,len(coininfo["filters"])):
-                if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
-                    sellingqty=lastorderqty - (lastorderqty % float(coininfo["filters"][i]["minQty"]))
+                coininfo = client.get_symbol_info(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
+                dl(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
+                dl(str(coininfo["filters"]))
+                sellingqty=0.0
+                lastorderqty=calcorderqty(lastorder)
+                # round selling qty to the min needed number of decimals
+                for i in range(0,len(coininfo["filters"])):
+                    if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
+                        sellingqty=lastorderqty - (lastorderqty % float(coininfo["filters"][i]["minQty"]))
 
-            dl (str(sellingqty))
-
-
-
-            #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=sellingqty))
+                dl (str(sellingqty))
+                saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=sellingqty))
             
 
         drawwindow(stdscr)
