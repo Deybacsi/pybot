@@ -297,10 +297,13 @@ def drawwindow(stdscr):
     orderwindow["height"]=curses.LINES-orderwindow["top"]-1    
     stdscr.clear()
     drawchart(actualthread,stdscr)
+
+    if settings["testmode"]: testwarningstr="- TEST! - | "
+    else: testwarningstr=""
     # statusbar
     for i in range(0,curses.COLS):
         stdscr.addstr(0,i," ",curses.color_pair(1))
-    stdscr.addstr(0,1,'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"],curses.color_pair(1))
+    stdscr.addstr(0,1,testwarningstr+'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"],curses.color_pair(1))
     stdscr.addstr(0,curses.COLS-12,"Refresh: ",curses.color_pair(1))
     # thread stats
     stdscr.addstr(statswindow["top"],statswindow["left"]+1,'Price: '+str(pybot_threads[actualthread]["currentprice"])+' '+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
@@ -338,9 +341,13 @@ def drawwindow(stdscr):
         if len(pybot_threads[actualthread]["orders"])-1-i>=0:
             actorder=pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]
             ordercolor=curses.color_pair(0)
+            # calc actual order qty-fees
+            actorderqty=calcorderqty(actorder)
+            prevorderqty=calcorderqty(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1])
             # if sell, calculate P/L, and set corresponding color
             if actorder["side"]=="SELL":
                 profitloss=round((float(actorder["cummulativeQuoteQty"])/float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1]["cummulativeQuoteQty"])-1)*100,2)
+                #profitloss=round((actorderqty/prevorderqty-1)*100,2)
                 if profitloss>=0: ordercolor=curses.color_pair(3)
                 else: ordercolor=curses.color_pair(2)
                 stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+39-len(str(profitloss)),str(profitloss)+'%',ordercolor)
@@ -352,8 +359,10 @@ def drawwindow(stdscr):
             trtime=str(datetime.datetime.fromtimestamp(int(actorder["transactTime"]/1000), tz=timezone.utc ))
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7   ,trtime[:-9],ordercolor)
             # asset1
+            #stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
+            #    -len(actorder["executedQty"]), actorder["executedQty"],ordercolor)    
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
-                -len(actorder["executedQty"]), actorder["executedQty"],ordercolor)             
+                -len(str(actorderqty)), str(actorderqty),ordercolor)         
             # asset2
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
                 -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)
@@ -361,6 +370,12 @@ def drawwindow(stdscr):
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+32
                 -len(str(round(float(actorder["fills"][0]["price"]),2))), str(round(float(actorder["fills"][0]["price"]),2)),ordercolor)
 
+# calc 1 order qty-trading fee amount from orderlist
+def calcorderqty(order):
+    quantity=0.0
+    for i in range(0,len(order["fills"])):
+        quantity += float(order["fills"][i]["qty"])-float(order["fills"][i]["commission"])
+    return quantity
             
 
 def loadorders(threadno):
@@ -390,6 +405,8 @@ def saveorder(threadno,order):
     fo=open("pairs/"+pybot_threads[threadno]["threadname"]+tfilename+".trades",'a')
     fo.write(chr(10)+'-#-#-#-#-'+chr(10))
     fo.close
+
+
 
 # main prog
 def main(stdscr):
@@ -471,8 +488,9 @@ def main(stdscr):
             # sell order with minprofit checking
             if (oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
                     and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
-                saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
-                pass
+                #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
+                saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=calcorderqty(lastorder))
+                
 
         drawwindow(stdscr)
         start = time.time()
