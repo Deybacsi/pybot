@@ -12,7 +12,7 @@ Binance kereskedőrobot mozgóátlagok alapján. (Nem a hagyományos MA crossing
 
 ### Előnyei:
 - Oldalazó trendnél (0.5%-1% profit beállítással) akár napi 1-2 tranzakció is **lehetséges**
-- Oldalazásnál a beállított profit% tranzakciónként garantált
+- Oldalazásnál a beállított profit%/tranzakció **nagyjából** garantált (lásd lent)
 
 ### Hátrányai:
 - Emelkedő, vagy zuhanó trendnél nem hatékony, vagy egyáltalán nem kereskedik
@@ -93,7 +93,7 @@ Kicsit még szellős, sok az üres rész, a későbbiekben majd ez is fejlesztve
 
 **Kereskedési párok váltása**: számbillentyűk 0-9 (10-nél több threadet elvben képes kezelni, de UI kijelzés nélkül)
 
-Mivela szálak számai a filenevek abc sorrendjéből adódnak, így a számozás hozzárendelhető direkt filenevekhez, az alábbi elnevezésekkel:
+Mivel a szálak számai a filenevek abc sorrendjéből adódnak, így a számozás hozzárendelhető direkt filenevekhez, az alábbi elnevezésekkel:
 
 ```
 0-btcusdt.txt
@@ -207,6 +207,8 @@ A beállítható párok száma **elvben** végtelen, de ennek határt szabnak a 
 
 Emellett az adatok lekérése láthatóen nem túl gyors, így 20-50-100 párnál a bot működése jelentősen belassulhat. Mire lehúzza az árakat, azok már rég elvavultak, így múltbeli adatokkal dolgozik, ami veszteséget okozhat.
 
+A Binance sandbox a teszteléshez **nem biztosít minden párat**, csak kb 20-at. Ezek megtalálhatók a `testmode-binance-pairs.txt`-ben.
+
 ## pairs/x.txt
 
 A file neve bármi lehet, csak annyi a lényeges, hogy .txt kiterjesztése legyen. Más fileokat nem vesz figyelembe a bot. (pl a `BTCUSDT.example`-t sem, ami mintaként használható)
@@ -252,6 +254,10 @@ A minimum profit, amit keresni szeretnénk egy tranzakción, **százalékban**.
 
 A `0.5` fél százalékot jelent. A bot **addig nem ad el**, amíg ez nem teljesül. 
 
+### Ebből a %-ból levonásra kerül a trading fee! Alapesetben ez 2*0.1%! (1 buy + 1 sell order)
+
+Vagyis a 0.5% beállítás nagyjából 0.3%-ot jelent majd. Emellett előfordult már olyan eset, amikor ez a % azért nem teljesül, mert mire "beér" a tőzsdére a sell market order, az ár beesik. Ez főképp teszt környezetben gyakori, a hirtelen fel/le mozgások miatt.
+
 ![buy order with profit](docs/ethusdt-orders-with-profit.png)
 
 Természetesen a tényleges profitunk lehet magasabb is, ha az ár nagyobbat ugrik felfelé, mint a beállított érték.
@@ -259,17 +265,13 @@ Természetesen a tényleges profitunk lehet magasabb is, ha az ár nagyobbat ugr
 ![buy order with profit](docs/btcusdt-orders-with-profit.png)
 
 
-Hátránya: a buy order után "beragadhatunk", ha lefelé tartó trend van, és az aktuális ár sosem éri el a megadott profitszintet. Megoldást lásd a `.trades` fileoknál.
-
-Lehet, hogy sokáig nem lesz eladás, viszont "garantált(abb)" a profit.
+Hátránya: a buy order után "beragadhatunk", ha lefelé tartó trend van, és az aktuális ár sosem éri el a megadott profitszintet. Megoldást lásd a `.trades` fileoknál. Lehet, hogy sokáig nem lesz eladás, viszont "garantált(abb)" a profit.
 
 Lehetséges a `minprofit` értékét nullára is állítani, így a nagyobb esések után, amikor az MA-k "kisimulnak", a bot eladja majd amit vett, valószínűleg veszteséggel.
 
 ![buy order with loss](docs/btcusdt-orders-with-loss.png)
 
 Előnye: Ha sokáig tartó lefelé trend van, nem ragad be a megvett coinunk, várva a profitra. Az esés utáni esetleges oldalazásnál az első sell valószínűleg veszteséges, viszont utána ugyanúgy kereskedik tovább a bot. Remélhetőleg az így keletkezett veszteséget a további tradek kiegyenlítik.
-
-Generál némi veszteséget, viszont időben több tranzakciót csinál, így nagyobb az esély a profitra.
 
 **stopped** - jelenleg not implemented
 

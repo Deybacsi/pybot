@@ -53,12 +53,6 @@ for line in urllib.request.urlopen("https://raw.githubusercontent.com/Deybacsi/p
         print("(git pull?)")
         exit()
         
-
-
-
-
-
-
 v=open('version.no','w'); v.write(programversion); v.close()
 
 # init debug log, and dl()
@@ -296,6 +290,56 @@ def drawchart(threadno,stdscr):
             else:
                 stdscr.addstr(chartwindowheight+2,chartwindowwidth-i,'-')       
 
+def draworders(stdscr):
+    # order list
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+7 ,pybot_threads[actualthread]["asset1"])
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+16,pybot_threads[actualthread]["asset2"])
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+25,"Price")
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+34,"P/L "+str(pybot_threads[actualthread]["minprofit"])+'%')
+    for i in range(0,orderwindow["height"]):
+        stdscr.addstr(orderwindow["top"]+1+i,orderwindow["left"],'|')
+        if len(pybot_threads[actualthread]["orders"])-1-i>=0:
+            actorder=pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]
+            ordercolor=curses.color_pair(0)
+            # calc actual order qty-fees
+            actbuyorderqty=calcbuyorderqty(actorder)
+            actsellorderqty=calcsellorderqty(actorder)
+            prevsellorderqty=calcsellorderqty(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1])
+            # if sell, calculate P/L, and set corresponding color
+            if actorder["side"]=="SELL":
+                #profitloss=round((float(actorder["cummulativeQuoteQty"])/float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1]["cummulativeQuoteQty"])-1)*100,2)
+                profitloss=round((actsellorderqty/prevsellorderqty-1)*100,2)
+                if profitloss>=0: ordercolor=curses.color_pair(3)
+                else: ordercolor=curses.color_pair(2)
+                # asset1
+                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
+                    -len(str(float(actorder["executedQty"]))), str(float(actorder["executedQty"])),ordercolor)         
+                # asset2
+                #stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
+                #    -len(str(actsellorderqty)), str(actsellorderqty),ordercolor)   
+
+                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+49-len(str(profitloss)),str(profitloss)+'%',ordercolor)
+            else: # buy order
+                # asset1
+                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
+                    -len(str(actbuyorderqty)), str(actbuyorderqty),ordercolor)         
+                # asset2
+                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
+                    -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)                
+
+
+            #dl(str(actorder))
+            # buy/sell
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+2,actorder["side"],ordercolor)
+            # date
+            trtime=str(datetime.datetime.fromtimestamp(int(actorder["transactTime"]/1000), tz=timezone.utc ))
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7   ,trtime[:-9],ordercolor)
+
+            # price
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+32
+                -len(str(round(float(actorder["fills"][0]["price"]),2))), str(round(float(actorder["fills"][0]["price"]),2)),ordercolor)
+
+
 # draw the whole screen
 def drawwindow(stdscr):
     global actualthread
@@ -348,54 +392,23 @@ def drawwindow(stdscr):
             stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,"B",curses.color_pair(2))
         else:
             stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,"-",curses.A_DIM)
-
     # order list
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+7 ,pybot_threads[actualthread]["asset1"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+16,pybot_threads[actualthread]["asset2"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+25,"Price")
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+34,"P/L "+str(pybot_threads[actualthread]["minprofit"])+'%')
-    for i in range(0,orderwindow["height"]):
-        stdscr.addstr(orderwindow["top"]+1+i,orderwindow["left"],'|')
-        
-        if len(pybot_threads[actualthread]["orders"])-1-i>=0:
-            actorder=pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]
-            ordercolor=curses.color_pair(0)
-            # calc actual order qty-fees
-            actorderqty=calcorderqty(actorder)
-            prevorderqty=calcorderqty(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1])
-            # if sell, calculate P/L, and set corresponding color
-            if actorder["side"]=="SELL":
-                profitloss=round((float(actorder["cummulativeQuoteQty"])/float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1]["cummulativeQuoteQty"])-1)*100,2)
-                #profitloss=round((actorderqty/prevorderqty-1)*100,2)
-                if profitloss>=0: ordercolor=curses.color_pair(3)
-                else: ordercolor=curses.color_pair(2)
-                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+39-len(str(profitloss)),str(profitloss)+'%',ordercolor)
+    draworders(stdscr)
 
-            #dl(str(actorder))
-            # buy/sell
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+2,actorder["side"],ordercolor)
-            # date
-            trtime=str(datetime.datetime.fromtimestamp(int(actorder["transactTime"]/1000), tz=timezone.utc ))
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7   ,trtime[:-9],ordercolor)
-            # asset1
-            #stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
-            #    -len(actorder["executedQty"]), actorder["executedQty"],ordercolor)    
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
-                -len(str(actorderqty)), str(actorderqty),ordercolor)         
-            # asset2
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
-                -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)
-            # price
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+32
-                -len(str(round(float(actorder["fills"][0]["price"]),2))), str(round(float(actorder["fills"][0]["price"]),2)),ordercolor)
-
-# calc 1 order qty-trading fee amount from orderlist
-def calcorderqty(order):
+# calc 1 order-  substract trading fee amount
+def calcbuyorderqty(order):
     quantity=0.0
     for i in range(0,len(order["fills"])):
         quantity += float(order["fills"][i]["qty"])-float(order["fills"][i]["commission"])
     return quantity
-            
+
+# calc 1 order-  substract trading fee amount
+def calcsellorderqty(order):
+    quantity=float(order["cummulativeQuoteQty"])
+    for i in range(0,len(order["fills"])):
+        quantity -= float(order["fills"][i]["commission"])
+    return quantity
+                
 
 def loadorders(threadno):
     pybot_threads[threadno]["orders"]=[]
@@ -509,12 +522,12 @@ def main(stdscr):
                     and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
                 #dl(str(lastorder))
-                #dl(str(calcorderqty(lastorder)))
+
                 coininfo = client.get_symbol_info(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
                 dl(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
                 dl(str(coininfo["filters"]))
                 sellingqty=0.0
-                lastorderqty=calcorderqty(lastorder)
+                lastorderqty=calcbuyorderqty(lastorder)
                 # round selling qty to the min needed number of decimals
                 for i in range(0,len(coininfo["filters"])):
                     if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
