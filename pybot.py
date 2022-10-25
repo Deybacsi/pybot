@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.04"
+programversion="v0.1.05"
 
 print(programname, programversion)
 
@@ -32,9 +32,10 @@ refreshtime=60
 elapsed = 0
 
 # shitty subwindows defs, values recalculated in drawwindow
-chartwindow={ "top" : 2,"left": 0, "width":0, "height":0}
-statswindow={"top" : 2,"left": 0, "width":0,"height":0}
-orderwindow={"top" : 2,"left": 0,"width":0,"height":0}
+chartwindow={"top" : 3,"left": 1, "width":0, "height":0}
+statswindow={"top" : 2,"left": 1, "width":0,"height":0}
+orderwindow={"top" : 2,"left": 1,"width":0,"height":0}
+leftwindow ={"top" : 2,"left": 1,"width":0,"height":0}
 
 U_CANDLEBODY = "▉"
 U_CANDLEWICK = "│"
@@ -42,8 +43,26 @@ U_MACHARTUP  = "⋰"
 U_MACHARTDOWN= "⋱"
 U_MACHART    = "⋯"
 U_CHECKMARK  = "✔️"
-U_ARROWUP    = "🡅"
-U_ARROWDOWN  = "🡇"
+U_ARROWUP    = "↑"
+U_ARROWDOWN  = "↓"
+U_BULLET     = "•"
+
+U_BOX_HORZ  = "─"
+U_BOX_VERT  = "│"
+U_BOX_VERTH = "╵"
+
+
+U_BOX_HORZDOT= "┈"
+
+U_BOX_TOPLEFT   = "┌"
+U_BOX_TOPRIGHT  = "┐" 
+U_BOX_BOTLEFT   = "└"
+U_BOX_BOTRIGHT  = "┘"
+U_BOX_CROSS     = "┼"
+U_BOX_TUP       = "┬"
+U_BOX_TDOWN     = "┴"
+U_BOX_TLEFT     = "├"
+U_BOX_TRIGHT    = "┤"
 
 
 os.environ.setdefault('ESCDELAY', '25')     # set esc key delay to 25ms
@@ -129,6 +148,10 @@ print("Connecting to Binance")
 if settings["testmode"]: print("!!! TESTMODE !!!"); client = Client(settings["tapikey"], settings["tapisecret"], testnet=True)
 else: client = Client(settings["apikey"], settings["apisecret"]); print("Connected")
 
+def leftprint(str):
+    global leftwin
+    leftwin.addstr(str+chr(10)+chr(13))
+    leftwin.refresh()
 
 # get current exchange balances for all threads
 def getbalances():
@@ -157,6 +180,7 @@ def getbalances():
 
 # get candle data for 1 thread
 def getcandles(threadno):
+    global leftwin
     for j in range(0,500):
         pricedata[threadno][j]={
             "ptime" : 0,
@@ -169,11 +193,12 @@ def getcandles(threadno):
             "ma99"  : 0,
             "below" : False,
             "above" : False
-        }    
-    print("Getting candledata for",pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"],Client.KLINE_INTERVAL_15MINUTE+chr(13))
+        }
+    
+    leftprint("Getting candledata for "+pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"]+' '+Client.KLINE_INTERVAL_15MINUTE)
     candles = client.get_klines(symbol=pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"], interval=Client.KLINE_INTERVAL_15MINUTE)
-    print("Got",len(candles),"candles"+chr(13))
-    print("Calculating moving averages and indicators"+chr(13))
+    leftprint("Got "+str(len(candles))+" candles")
+    leftprint("Calculating moving averages and indicators")
     #populate pricedatas
     for i in range(0,len(candles)):
 
@@ -190,30 +215,23 @@ def getcandles(threadno):
             if pricedata[threadno][i]["plow"]<pricedata[threadno][i]["pclose"]*0.99: pricedata[threadno][i]["plow"]=pricedata[threadno][i]["pclose"]*0.99
 
     # calc MAs
-    print("MA7  ", sep='',end='')
     for i in range(7,len(candles)):
-        if i % 10 == 0: print(".", sep='',end='')
+        
         ma7sum=0
         for j in range(0,7):
             ma7sum+=pricedata[threadno][i-j]["pclose"]
         pricedata[threadno][i]["ma7"]=ma7sum/7
-    print(""+chr(13))
-    print("MA25 ", sep='',end='')
     for i in range(25,len(candles)):
-        if i % 10 == 0: print(".", sep='',end='')
         ma25sum=0
         for j in range(0,25):
             ma25sum+=pricedata[threadno][i-j]["pclose"]
         pricedata[threadno][i]["ma25"]=ma25sum/25
-    print(""+chr(13))
-    print("MA99 ", sep='',end='')
     for i in range(99,len(candles)):
-        if i % 10 == 0: print(".", sep='',end='')
         ma99sum=0
         for j in range(0,99):
             ma99sum+=pricedata[threadno][i-j]["pclose"]
         pricedata[threadno][i]["ma99"]=ma99sum/99
-    print(chr(13))
+
     # calc above&below indicators    
     for i in range(0,len(candles)):
         if pricedata[threadno][i]["pclose"]<pricedata[threadno][i]["ma7"] and pricedata[threadno][i]["pclose"]<pricedata[threadno][i]["ma25"] and pricedata[threadno][i]["pclose"]<pricedata[threadno][i]["ma99"]:
@@ -254,9 +272,9 @@ def drawchart(threadno,stdscr):
 
     #horizontal lines
     for i in range(1,5):
-        for j in range(0,chartwindow["width"],5):
-            stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),j,"-")
-        stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),0,str(round(pricemax-(pricemax-pricemin)/5*i,2)),curses.A_DIM)
+        for j in range(chartwindow["left"],chartwindow["width"],5):
+            stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),j,U_BOX_HORZDOT, curses.A_DIM)
+        stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),chartwindow["left"],str(round(pricemax-(pricemax-pricemin)/5*i,2)), curses.A_DIM)
 
     charheightprice=(pricemax-pricemin)/chartwindow["height"]
     dl (str(threadno)+' '+str(pricemin)+','+str(pricemax)+','+str(charheightprice))
@@ -265,25 +283,46 @@ def drawchart(threadno,stdscr):
         chartwindowheight=chartwindow["top"]+chartwindow["height"]
         chartwindowwidth =chartwindow["left"]+chartwindow["width"]
 
+        # ^ and v indicators
+        if actprice["above"]:
+            stdscr.addstr(chartwindow["top"]-2,chartwindowwidth-i,U_ARROWUP,curses.color_pair(3) | curses.A_DIM)
+            #stdscr.addstr(calcy(actprice["phigh"])-1,chartwindowwidth-i,U_ARROWUP,curses.color_pair(3) | curses.A_DIM)
+            
+        else:
+            if actprice["below"]:
+                stdscr.addstr(chartwindowheight+2,chartwindowwidth-i,U_ARROWDOWN,curses.color_pair(2)| curses.A_DIM)    
+                #stdscr.addstr(calcy(actprice["plow"])+1,chartwindowwidth-i,U_ARROWDOWN,curses.color_pair(2) | curses.A_DIM)
+                
+        for j in range(0,len(pybot_threads[actualthread]["orders"])):
+            if int(pybot_threads[actualthread]["orders"][j]["transactTime"]/1000)>int(actprice["ptime"]) and int(pybot_threads[actualthread]["orders"][j]["transactTime"]/1000)<int(actprice["ptime"])+(15*60):
+                if pybot_threads[actualthread]["orders"][j]["side"]=="SELL":
+                    stdscr.addstr(chartwindow["top"]-2,chartwindowwidth-i,"S")
+                    for y in range(chartwindow["top"],calcy(actprice["phigh"]),2): stdscr.addstr(y,chartwindowwidth-i,U_BOX_VERTH)
+                else:
+                    stdscr.addstr(chartwindowheight+2,chartwindowwidth-i,"B");
+                    for y in range(calcy(actprice["plow"]),chartwindowheight+2,2): stdscr.addstr(y,chartwindowwidth-i,U_BOX_VERTH)
+   
+
+
         # MAs
-        stdscr.addstr(calcy(actprice["ma99"]),chartwindowwidth-i,"˙",curses.color_pair(9))
+        stdscr.addstr(calcy(actprice["ma99"]),chartwindowwidth-i,"˙",curses.color_pair(7))
         stdscr.addstr(calcy(actprice["ma25"]),chartwindowwidth-i,"˙",curses.color_pair(8))
-        stdscr.addstr(calcy(actprice["ma7"]),chartwindowwidth-i,"˙",curses.color_pair(7))
+        stdscr.addstr(calcy(actprice["ma7"]),chartwindowwidth-i,"˙",curses.color_pair(9))
 
         # candle kanóc
         for j in range(calcy(actprice["phigh"]), calcy(actprice["plow"])+1):
-            stdscr.addstr(j,chartwindowwidth-i,"|")                    
+            stdscr.addstr(j,chartwindowwidth-i,U_BOX_VERT,curses.A_DIM)                    
 
 
         # candle body
         # red
         if actprice["popen"]>actprice["pclose"]:    
             for j in range( calcy(actprice["popen"]), calcy(actprice["pclose"])+1): 
-                stdscr.addstr(j,chartwindowwidth-i,U_CANDLEBODY,curses.color_pair(5))
+                stdscr.addstr(j,chartwindowwidth-i,U_CANDLEBODY,curses.color_pair(2))
         else:
             # green
             for j in range( calcy(actprice["pclose"]), calcy(actprice["popen"])+1): 
-                stdscr.addstr(j,chartwindowwidth-i,U_CANDLEBODY,curses.color_pair(6))
+                stdscr.addstr(j,chartwindowwidth-i,U_CANDLEBODY,curses.color_pair(3))
 
         # write out min/max prices
         if actprice["phigh"]==pricemax:
@@ -291,14 +330,6 @@ def drawchart(threadno,stdscr):
         if actprice["plow"]==pricemin:
             stdscr.addstr(chartwindowheight+1,chartwindowwidth-i,str(pricemin))
 
-        # ^ and v indicators
-        if actprice["above"]:
-            stdscr.addstr(chartwindowheight+2,chartwindowwidth-i,'^',curses.color_pair(3))
-        else:
-            if actprice["below"]:
-                stdscr.addstr(chartwindowheight+2,chartwindowwidth-i,'v',curses.color_pair(2))     
-            else:
-                stdscr.addstr(chartwindowheight+2,chartwindowwidth-i,'-')       
 
 def draworders(stdscr):
     # order list
@@ -307,7 +338,6 @@ def draworders(stdscr):
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+25,"Price")
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+34,"P/L "+str(pybot_threads[actualthread]["minprofit"])+'%')
     for i in range(0,orderwindow["height"]):
-        stdscr.addstr(orderwindow["top"]+1+i,orderwindow["left"],'|')
         if len(pybot_threads[actualthread]["orders"])-1-i>=0:
             actorder=pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]
             ordercolor=curses.color_pair(0)
@@ -325,8 +355,8 @@ def draworders(stdscr):
                 stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
                     -len(str(float(actorder["executedQty"]))), str(float(actorder["executedQty"])),ordercolor)         
                 # asset2
-                #stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
-                #    -len(str(actsellorderqty)), str(actsellorderqty),ordercolor)   
+                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
+                    -len(str(actsellorderqty)), str(actsellorderqty),ordercolor)   
 
                 stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+49-len(str(profitloss)),str(profitloss)+'%',ordercolor)
             else: # buy order
@@ -350,60 +380,104 @@ def draworders(stdscr):
                 -len(str(round(float(actorder["fills"][0]["price"]),2))), str(round(float(actorder["fills"][0]["price"]),2)),ordercolor)
 
 
+def setwindowsizes():
+    # setup "windows" in lame ways
+    chartwindow["width"]=curses.COLS -1 - chartwindow["left"]  -1
+    chartwindow["height"]=int(curses.LINES/2)-1
+    statswindow["top"]=chartwindow["top"]+chartwindow["height"]+4
+    statswindow["width"]=chartwindow["width"]
+    statswindow["height"]=5
+    leftwindow ["top"]=statswindow["top"]+statswindow["height"]+1
+    leftwindow ["width"]=int(curses.COLS/2)
+    leftwindow ["height"]=curses.LINES-leftwindow["top"]-1
+    orderwindow["top"]=leftwindow ["top"]
+    orderwindow["left"]=int(curses.COLS/2)+1
+    orderwindow["width"]=leftwindow ["width"]
+    orderwindow["height"]=leftwindow ["height"] 
+
+def drawframe(stdscr):
+    stdscr.clear()
+    # draw corners
+    stdscr.addstr(0,0,U_BOX_TOPLEFT); stdscr.addstr(0,curses.COLS-1,U_BOX_TOPRIGHT);stdscr.addstr(curses.LINES-1,0,U_BOX_BOTLEFT);
+    # bottom right corner will raise an exception because addstr can't move the cursor to the next line    
+    try: stdscr.addstr(curses.LINES-1,curses.COLS-1,U_BOX_BOTRIGHT);
+    except: pass
+    # edge lines
+    for i in range(1,curses.COLS-1):
+        stdscr.addstr(0,i,U_BOX_HORZ); stdscr.addstr(curses.LINES-1,i,U_BOX_HORZ);
+        stdscr.addstr(statswindow["top"]-1,i,U_BOX_HORZ);stdscr.addstr(statswindow["top"]+statswindow["height"],i,U_BOX_HORZ)
+    for i in range(1,curses.LINES-1):
+        stdscr.addstr(i,0,U_BOX_VERT); stdscr.addstr(i,curses.COLS-1,U_BOX_VERT)
+    #statswindow corners
+        stdscr.addstr(statswindow["top"]-1,0,U_BOX_TLEFT);stdscr.addstr(statswindow["top"]+statswindow["height"],0,U_BOX_TLEFT)
+        stdscr.addstr(statswindow["top"]-1,curses.COLS-1,U_BOX_TRIGHT);stdscr.addstr(statswindow["top"]+statswindow["height"],curses.COLS-1,U_BOX_TRIGHT)
+    stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+' Stats '+U_BOX_TLEFT);
+    
+    # statusbar
+    if settings["testmode"]: testwarningstr="- TEST! - | "
+    else: testwarningstr=""
+    stdscr.addstr(0,2,U_BOX_TRIGHT+' '+testwarningstr+'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"]+' '+U_BOX_TLEFT)
+    stdscr.addstr(0,curses.COLS-16,U_BOX_TRIGHT+' '+"Refresh:    "+U_BOX_TLEFT)
+
+    # bottom left window
+    stdscr.addstr(leftwindow["top"]-1,leftwindow["left"]+leftwindow["width"],U_BOX_TUP);
+    stdscr.addstr(leftwindow["top"]+leftwindow["height"],leftwindow["left"]+leftwindow["width"],U_BOX_TDOWN)
+    for i in range(leftwindow["top"],leftwindow["top"]+leftwindow["height"]):
+        stdscr.addstr(i,leftwindow["left"]+leftwindow["width"],U_BOX_VERT)
+
+    #order window title
+    stdscr.addstr(orderwindow["top"]-1,orderwindow["left"]+2,U_BOX_TRIGHT+" Orders "+U_BOX_TLEFT)
+
+    #version
+    stdscr.addstr(curses.LINES-1, curses.COLS-len(programversion)-6,U_BOX_TRIGHT+" "+programversion+" "+U_BOX_TLEFT)
+
 # draw the whole screen
 def drawwindow(stdscr):
     global actualthread
+    global leftwin
     #dl(str(actualthread))
     # if window too small
     if curses.COLS<80 or curses.LINES<33:
         stdscr.clear(); stdscr.addstr(12,2,"Increase window size :) "); return
  
-    # setup "windows" in lame ways
-    chartwindow["width"]=curses.COLS -1 - chartwindow["left"] 
-    chartwindow["height"]=int(curses.LINES/2)
-    statswindow["top"]=chartwindow["top"]+chartwindow["height"]+3
-    statswindow["width"]=chartwindow["width"]
-    statswindow["height"]=5
-    orderwindow["top"]=statswindow["top"]+statswindow["height"]+1
-    orderwindow["left"]=int(curses.COLS/2)
-    orderwindow["width"]=chartwindow["width"]
-    orderwindow["height"]=curses.LINES-orderwindow["top"]-1    
-    stdscr.clear()
+    setwindowsizes()
+    drawframe(stdscr)
     drawchart(actualthread,stdscr)
 
-    if settings["testmode"]: testwarningstr="- TEST! - | "
-    else: testwarningstr=""
-    # statusbar
-    for i in range(0,curses.COLS):
-        stdscr.addstr(0,i," ",curses.color_pair(1))
-    stdscr.addstr(0,1,testwarningstr+'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"],curses.color_pair(1))
-    stdscr.addstr(0,curses.COLS-12,"Refresh: ",curses.color_pair(1))
+    
     # thread stats
-    stdscr.addstr(statswindow["top"],statswindow["left"]+1,'Price: '+str(pybot_threads[actualthread]["currentprice"])+' '+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
-    stdscr.addstr(statswindow["top"]+1,statswindow["left"]+1,'Balances:')
-    stdscr.addstr(statswindow["top"]+2,statswindow["left"]+1,pybot_threads[actualthread]["asset1"]+':')
-    stdscr.addstr(statswindow["top"]+2,statswindow["left"]+1+7,str(pybot_threads[actualthread]["asset1balance"]))
-    stdscr.addstr(statswindow["top"]+3,statswindow["left"]+1,pybot_threads[actualthread]["asset2"]+':')
-    stdscr.addstr(statswindow["top"]+3,statswindow["left"]+1+7,str(pybot_threads[actualthread]["asset2balance"]))
-    # candles to... at right
+    stdscr.addstr(statswindow["top"],statswindow["left"]+40, str(pricedata[actualthread][len(pricedata[actualthread])-1]["pclose"]))
+    stdscr.addstr(statswindow["top"],statswindow["left"],'Price: '+str(pybot_threads[actualthread]["currentprice"])+' '+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
+    stdscr.addstr(statswindow["top"]+1,statswindow["left"],'Balances:')
+    stdscr.addstr(statswindow["top"]+2,statswindow["left"],pybot_threads[actualthread]["asset1"]+':')
+    stdscr.addstr(statswindow["top"]+2,statswindow["left"]+7,str(pybot_threads[actualthread]["asset1balance"]))
+    stdscr.addstr(statswindow["top"]+3,statswindow["left"],pybot_threads[actualthread]["asset2"]+':')
+    stdscr.addstr(statswindow["top"]+3,statswindow["left"]+7,str(pybot_threads[actualthread]["asset2balance"]))
+    # candles to buy/sell at right
     stdscr.addstr(statswindow["top"]  ,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestosell"]+1-17,"Candles to sell |")
     stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestobuy"] +1-16,"Candles to buy |")
-
     # draw S and B indicators
     # SELL
     for i in range(0,pybot_threads[actualthread]["candlestosell"]):
         if pricedata[actualthread][len(pricedata[actualthread])-1-i]["above"]==True:
-            stdscr.addstr(statswindow["top"],chartwindow["left"]+chartwindow["width"]-i,"S",curses.color_pair(3))
-        else:
-            stdscr.addstr(statswindow["top"],chartwindow["left"]+chartwindow["width"]-i,"-",curses.A_DIM)
+            stdscr.addstr(statswindow["top"],chartwindow["left"]+chartwindow["width"]-i,U_CHECKMARK,curses.color_pair(3))
     # BUY
     for i in range(0,pybot_threads[actualthread]["candlestobuy"]):
         if pricedata[actualthread][len(pricedata[actualthread])-1-i]["below"]==True:
-            stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,"B",curses.color_pair(2))
-        else:
-            stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,"-",curses.A_DIM)
+            stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,U_CHECKMARK,curses.color_pair(2))
+
+
+
     # order list
     draworders(stdscr)
+
+    stdscr.refresh()
+    leftprint("Refresh done")
+
+
+    
+
+
 
 # calc 1 order-  substract trading fee amount
 def calcbuyorderqty(order):
@@ -453,6 +527,8 @@ def saveorder(threadno,order):
 
 # main prog
 def main(stdscr):
+    global leftwin
+    stdscr.refresh()
     global actualthread
     pressedkey=0
 
@@ -465,33 +541,44 @@ def main(stdscr):
     curses.init_pair(6, curses.COLOR_GREEN, curses.COLOR_GREEN)
     
     # MAs
-    curses.init_pair(7, curses.COLOR_BLUE, curses.COLOR_BLACK)
+    curses.init_pair(7, curses.COLOR_YELLOW, curses.COLOR_BLACK)
     curses.init_pair(8, curses.COLOR_MAGENTA, curses.COLOR_BLACK)
     curses.init_pair(9, curses.COLOR_CYAN, curses.COLOR_BLACK)
 
-
-
     curses.curs_set(False)
+
+    setwindowsizes()
+
+    drawframe(stdscr)
+    stdscr.refresh()
+    leftwin=curses.newwin(leftwindow["height"], leftwindow["left"]+leftwindow["width"]-1, leftwindow["top"], leftwindow["left"])
+    leftwin.scrollok(True)
+    leftwin.refresh()
+    
+
+
     stdscr.nodelay(1)
     while True:
 
-
-        stdscr.clear()
-        stdscr.refresh()
-        print("Getting balances and symbol info"+chr(13))
+        curses.curs_set(True)
+        #stdscr.clear()
+        #stdscr.refresh()        
+        leftprint("Getting balances and symbol info")
         getbalances()        
         for i in range(0,len(pybot_threads)):
-            print(pybot_threads[i]["asset1"],':',pybot_threads[i]["asset1balance"]+chr(13))
-            print(pybot_threads[i]["asset2"],':',pybot_threads[i]["asset2balance"]+chr(13))
+            leftprint(pybot_threads[i]["asset1"]+':'+pybot_threads[i]["asset1balance"])
+            leftprint(pybot_threads[i]["asset2"]+':'+pybot_threads[i]["asset2balance"])
             #pybot_threads[i]["symbol_info"]=client.get_symbol_info(pybot_threads[i]["asset1"]+pybot_threads[i]["asset2"])
             #print(pybot_threads[i]["symbol_info"]["symbol"]+' Status: '+pybot_threads[i]["symbol_info"]["status"]+' SpotAllowed: '+str(pybot_threads[i]["symbol_info"]["isSpotTradingAllowed"])+chr(13))
             #dl(str(pybot_threads[i]["symbol_info"]))
 
         for actthread in range(0,len(pybot_threads)):
+            curses.curs_set(True)
             getcandles(actthread)
-            print("Get current price"+chr(13))
+            leftprint("Get current price")
             pybot_threads[actthread]["currentprice"] = float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
             #dl(str(pybot_threads[actthread]["currentprice"]))
+            curses.curs_set(False)
 
             oktobuycounter=0
             oktosellcounter=0
@@ -542,9 +629,11 @@ def main(stdscr):
                 # round selling qty to the min needed number of decimals
                 for i in range(0,len(coininfo["filters"])):
                     if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
-                        sellingqty=lastorderqty - (lastorderqty % float(coininfo["filters"][i]["minQty"]))
+                        # rounding because of 64b floating point fuckery
+                        sellingqty=round(lastorderqty - (lastorderqty % float(coininfo["filters"][i]["minQty"])),8)
 
                 dl (str(sellingqty))
+                dl (str(round(sellingqty,8)))
                 saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=sellingqty))
             
 
@@ -554,8 +643,8 @@ def main(stdscr):
         while elapsed < refreshtime:
             elapsed = int(time.time() - start)
             
-            stdscr.addstr(0,curses.COLS-3,"   ",curses.color_pair(1))
-            stdscr.addstr(0,curses.COLS-3,str(60-elapsed),curses.color_pair(1))
+            stdscr.addstr(0,curses.COLS-5,"  ")
+            stdscr.addstr(0,curses.COLS-5,str(60-elapsed))
             stdscr.refresh()
             time.sleep(0.25) 
 
@@ -582,6 +671,7 @@ def main(stdscr):
    
 
 print("Initializing screen")
+
 wrapper(main)
 
 
