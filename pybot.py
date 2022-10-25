@@ -36,6 +36,16 @@ chartwindow={ "top" : 2,"left": 0, "width":0, "height":0}
 statswindow={"top" : 2,"left": 0, "width":0,"height":0}
 orderwindow={"top" : 2,"left": 0,"width":0,"height":0}
 
+U_CANDLEBODY = "▉"
+U_CANDLEWICK = "│"
+U_MACHARTUP  = "⋰"
+U_MACHARTDOWN= "⋱"
+U_MACHART    = "⋯"
+U_CHECKMARK  = "✔️"
+U_ARROWUP    = "🡅"
+U_ARROWDOWN  = "🡇"
+
+
 os.environ.setdefault('ESCDELAY', '25')     # set esc key delay to 25ms
 
 print("Searching for updates")
@@ -269,11 +279,11 @@ def drawchart(threadno,stdscr):
         # red
         if actprice["popen"]>actprice["pclose"]:    
             for j in range( calcy(actprice["popen"]), calcy(actprice["pclose"])+1): 
-                stdscr.addstr(j,chartwindowwidth-i,"X",curses.color_pair(5))
+                stdscr.addstr(j,chartwindowwidth-i,U_CANDLEBODY,curses.color_pair(5))
         else:
             # green
             for j in range( calcy(actprice["pclose"]), calcy(actprice["popen"])+1): 
-                stdscr.addstr(j,chartwindowwidth-i,"X",curses.color_pair(6))
+                stdscr.addstr(j,chartwindowwidth-i,U_CANDLEBODY,curses.color_pair(6))
 
         # write out min/max prices
         if actprice["phigh"]==pricemax:
@@ -400,14 +410,15 @@ def calcbuyorderqty(order):
     quantity=0.0
     for i in range(0,len(order["fills"])):
         quantity += float(order["fills"][i]["qty"])-float(order["fills"][i]["commission"])
-    return quantity
+    # round to 8 decimals because of the fucking 64 bit float storing. It makes 0.00077900 from 0.0007790000000000001 which means 0.000779 finally
+    return round(quantity,8)
 
 # calc 1 order-  substract trading fee amount
 def calcsellorderqty(order):
     quantity=float(order["cummulativeQuoteQty"])
     for i in range(0,len(order["fills"])):
         quantity -= float(order["fills"][i]["commission"])
-    return quantity
+    return round(quantity,8)
                 
 
 def loadorders(threadno):
