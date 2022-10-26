@@ -397,6 +397,8 @@ def setwindowsizes():
 
 def drawframe(stdscr):
     stdscr.clear()
+
+     
     # draw corners
     stdscr.addstr(0,0,U_BOX_TOPLEFT); stdscr.addstr(0,curses.COLS-1,U_BOX_TOPRIGHT);stdscr.addstr(curses.LINES-1,0,U_BOX_BOTLEFT);
     # bottom right corner will raise an exception because addstr can't move the cursor to the next line    
@@ -410,7 +412,11 @@ def drawframe(stdscr):
         stdscr.addstr(i,0,U_BOX_VERT); stdscr.addstr(i,curses.COLS-1,U_BOX_VERT)
     #statswindow corners
         stdscr.addstr(statswindow["top"]-1,0,U_BOX_TLEFT);stdscr.addstr(statswindow["top"]+statswindow["height"],0,U_BOX_TLEFT)
-        stdscr.addstr(statswindow["top"]-1,curses.COLS-1,U_BOX_TRIGHT);stdscr.addstr(statswindow["top"]+statswindow["height"],curses.COLS-1,U_BOX_TRIGHT)
+        stdscr.addstr(statswindow["top"]-1,curses.COLS-1,U_BOX_TRIGHT);
+        dl(str(statswindow["top"]))
+        dl(str(statswindow["height"]))
+        dl(str(curses.COLS-1))
+        stdscr.addstr(statswindow["top"]+statswindow["height"],curses.COLS-1,U_BOX_TRIGHT)
     stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+' Stats '+U_BOX_TLEFT);
     
     # statusbar
@@ -472,7 +478,9 @@ def drawwindow(stdscr):
     draworders(stdscr)
 
     stdscr.refresh()
-    leftprint("Refresh done")
+    #leftprint("")
+    leftwin.clrtoeol()
+    leftwin.refresh()
 
 
     
@@ -531,6 +539,15 @@ def main(stdscr):
     stdscr.refresh()
     global actualthread
     pressedkey=0
+
+    stdscr.addstr('Windowsize:'+str(curses.COLS)+'x'+str(curses.LINES))
+    if curses.COLS<80 or curses.LINES<33:
+        curses.endwin();
+        print("\n\nWindow ",curses.COLS,'x',curses.LINES)
+        print("\n\nWindow size too small, exiting")
+
+        exit()
+    print("dummy")
 
     # Clear screen
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
@@ -638,6 +655,7 @@ def main(stdscr):
             
 
         drawwindow(stdscr)
+        
         start = time.time()
         elapsed=0
         while elapsed < refreshtime:
@@ -657,7 +675,9 @@ def main(stdscr):
                     actualthread = pressedkey-48
                     #dl(str(actualthread))
                     drawwindow(stdscr)
+                    leftwin.refresh()
                     stdscr.refresh()
+                    
 
             # ESC
             if pressedkey==27:

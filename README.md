@@ -145,7 +145,7 @@ Indítás után "Add python.exe to PATH"-hoz pipa, majd "Install now", és "Disa
 Win+R, szövegmezőbe `cmd` beír, majd enter
 
 A megjelenő cmd ablakba: 
-
+- https://visualstudio.microsoft.com/visual-cpp-build-tools/, pip install --upgrade setuptools
 ```
 pip install python-binance
 pip install windows-curses
@@ -176,7 +176,7 @@ Tartalma:
 
     Ez esetben a "**tapikey**" és "**tapisecret**" értékeket kell kitölteni.
 
-    API key-t a https://testnet.binance.vision/key/generate oldalon lehet generáltatni, [Github account](https://github.com/signup) kell hozzá.
+    API key-t a https://testnet.binance.vision oldalon lehet generáltatni, [Github account](https://github.com/signup) kell hozzá. (Login with github, aztán generate HMAC_SHA256 key)
 
     Keygenerálás után a létrejövő Binance sandbox accountba minden kereskedhető coinból leoszt a rendszer egy szép adagot egyenlegként. Pl 1BTC, 10 ETH, 10 000 USDT, stbstb.
 
