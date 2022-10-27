@@ -16,6 +16,7 @@ from datetime import timezone
 import urllib.request
 import curses               # windows: windows-curses
 from curses import wrapper
+import traceback
 print("Starting Binance module")
 from binance.client import Client
 
@@ -277,7 +278,6 @@ def drawchart(threadno,stdscr):
         stdscr.addstr(chartwindow["top"]+int(chartwindow["height"]/5*i),chartwindow["left"],str(round(pricemax-(pricemax-pricemin)/5*i,2)), curses.A_DIM)
 
     charheightprice=(pricemax-pricemin)/chartwindow["height"]
-    dl (str(threadno)+' '+str(pricemin)+','+str(pricemax)+','+str(charheightprice))
     for i in range(0,chartwindow["width"]+1):
         actprice=pricedata[threadno][len(pricedata[threadno])-1-i]
         chartwindowheight=chartwindow["top"]+chartwindow["height"]
@@ -368,7 +368,6 @@ def draworders(stdscr):
                     -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)                
 
 
-            #dl(str(actorder))
             # buy/sell
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+2,actorder["side"],ordercolor)
             # date
@@ -413,9 +412,6 @@ def drawframe(stdscr):
     #statswindow corners
         stdscr.addstr(statswindow["top"]-1,0,U_BOX_TLEFT);stdscr.addstr(statswindow["top"]+statswindow["height"],0,U_BOX_TLEFT)
         stdscr.addstr(statswindow["top"]-1,curses.COLS-1,U_BOX_TRIGHT);
-        dl(str(statswindow["top"]))
-        dl(str(statswindow["height"]))
-        dl(str(curses.COLS-1))
         stdscr.addstr(statswindow["top"]+statswindow["height"],curses.COLS-1,U_BOX_TRIGHT)
     stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+' Stats '+U_BOX_TLEFT);
     
@@ -441,7 +437,6 @@ def drawframe(stdscr):
 def drawwindow(stdscr):
     global actualthread
     global leftwin
-    #dl(str(actualthread))
     # if window too small
     if curses.COLS<80 or curses.LINES<33:
         stdscr.clear(); stdscr.addstr(12,2,"Increase window size :) "); return
@@ -519,8 +514,6 @@ def loadorders(threadno):
             fstr +=  fline
         else: 
             pybot_threads[threadno]["orders"].append(json.loads(fstr));
-            #dl(fstr)
-            #dl('-------------------------------------------------------------------------------------------')
             fstr=''
         
 def saveorder(threadno,order):
@@ -587,19 +580,16 @@ def main(stdscr):
             leftprint(pybot_threads[i]["asset2"]+':'+pybot_threads[i]["asset2balance"])
             #pybot_threads[i]["symbol_info"]=client.get_symbol_info(pybot_threads[i]["asset1"]+pybot_threads[i]["asset2"])
             #print(pybot_threads[i]["symbol_info"]["symbol"]+' Status: '+pybot_threads[i]["symbol_info"]["status"]+' SpotAllowed: '+str(pybot_threads[i]["symbol_info"]["isSpotTradingAllowed"])+chr(13))
-            #dl(str(pybot_threads[i]["symbol_info"]))
 
         for actthread in range(0,len(pybot_threads)):
             curses.curs_set(True)
             getcandles(actthread)
             leftprint("Get current price")
             pybot_threads[actthread]["currentprice"] = float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
-            #dl(str(pybot_threads[actthread]["currentprice"]))
             curses.curs_set(False)
 
             oktobuycounter=0
             oktosellcounter=0
-            #dl(str(pricedata))
             # count prev candles if below
             for i in range(len(pricedata[actthread])-1,
                     len(pricedata[actthread])-1-pybot_threads[actthread]["candlestobuy"],-1):
@@ -636,11 +626,8 @@ def main(stdscr):
             if (oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
                     and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
-                #dl(str(lastorder))
 
                 coininfo = client.get_symbol_info(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
-                dl(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
-                dl(str(coininfo["filters"]))
                 sellingqty=0.0
                 lastorderqty=calcbuyorderqty(lastorder)
                 # round selling qty to the min needed number of decimals
@@ -670,10 +657,8 @@ def main(stdscr):
             pressedkey=stdscr.getch()
             # num buttons
             if pressedkey>=48 and pressedkey<=57:
-                dl("asdfasfasdf")
                 if pressedkey-48<len(pybot_threads):
                     actualthread = pressedkey-48
-                    #dl(str(actualthread))
                     drawwindow(stdscr)
                     leftwin.refresh()
                     stdscr.refresh()
@@ -692,7 +677,13 @@ def main(stdscr):
 
 print("Initializing screen")
 
-wrapper(main)
+
+try:
+    wrapper(main)
+except Exception as e:
+    dl(str(traceback.format_exc()))
+    print(traceback.format_exc())
+
 
 
 
