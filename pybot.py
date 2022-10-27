@@ -19,6 +19,7 @@ from curses import wrapper
 import traceback
 print("Starting Binance module")
 from binance.client import Client
+from binance import ThreadedWebsocketManager
 
 # thread's data
 pybot_threads=[]
@@ -148,14 +149,23 @@ for i in range(0,len(pybot_threads)):
         })
 
 
-print("Connecting to Binance")
+print("Connecting to Binance API ", end='')
 if settings["testmode"]: print("!!! TESTMODE !!!"); client = Client(settings["tapikey"], settings["tapisecret"], testnet=True)
-else: client = Client(settings["apikey"], settings["apisecret"]); print("Connected")
+else: client = Client(settings["apikey"], settings["apisecret"]); 
+print("OK")   
+
+def handle_socket_message(msg):
+    print(f"message type: {msg['e']}")
+    print(msg)
+    dl(str(msg['e']))
+    dl(str(msg))
+
+
 
 def leftprint(str):
     global leftwin
-    leftwin.addstr(str+chr(10)+chr(13))
-    leftwin.refresh()
+    #leftwin.addstr(str+chr(10)+chr(13))
+    #leftwin.refresh()
 
 # get current exchange balances for all threads
 def getbalances():
@@ -257,6 +267,53 @@ def getcandles(threadno):
 
     fcd.close()
     """
+
+def drawstatus(stdscr,str):
+    stdscr.addstr(curses.LINES-1,2,U_BOX_TRIGHT+"                                                                      "+U_BOX_TLEFT);
+    #stdscr.clrtoeol()
+    #stdscr.addstr(curses.LINES-1, curses.COLS-2,U_BOX_TLEFT)
+    stdscr.addstr(curses.LINES-1,4,str);        
+
+    stdscr.refresh()
+
+def drawframe(stdscr):
+    stdscr.clear()
+
+     
+    # draw corners
+    stdscr.addstr(0,0,U_BOX_TOPLEFT); stdscr.addstr(0,curses.COLS-1,U_BOX_TOPRIGHT);stdscr.addstr(curses.LINES-1,0,U_BOX_BOTLEFT);
+    # bottom right corner will raise an exception because addstr can't move the cursor to the next line    
+    try: stdscr.addstr(curses.LINES-1,curses.COLS-1,U_BOX_BOTRIGHT);
+    except: pass
+    # edge lines
+    for i in range(1,curses.COLS-1):
+        stdscr.addstr(0,i,U_BOX_HORZ); stdscr.addstr(curses.LINES-1,i,U_BOX_HORZ);
+        stdscr.addstr(statswindow["top"]-1,i,U_BOX_HORZ);stdscr.addstr(statswindow["top"]+statswindow["height"],i,U_BOX_HORZ)
+    for i in range(1,curses.LINES-1):
+        stdscr.addstr(i,0,U_BOX_VERT); stdscr.addstr(i,curses.COLS-1,U_BOX_VERT)
+    #statswindow corners
+        stdscr.addstr(statswindow["top"]-1,0,U_BOX_TLEFT);stdscr.addstr(statswindow["top"]+statswindow["height"],0,U_BOX_TLEFT)
+        stdscr.addstr(statswindow["top"]-1,curses.COLS-1,U_BOX_TRIGHT);
+        stdscr.addstr(statswindow["top"]+statswindow["height"],curses.COLS-1,U_BOX_TRIGHT)
+    stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+' Stats '+U_BOX_TLEFT);
+    
+    # statusbar
+    if settings["testmode"]: testwarningstr="- TEST! - | "
+    else: testwarningstr=""
+    stdscr.addstr(0,2,U_BOX_TRIGHT+' '+testwarningstr+'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"]+' '+U_BOX_TLEFT)
+    stdscr.addstr(0,curses.COLS-16,U_BOX_TRIGHT+' '+"Refresh:    "+U_BOX_TLEFT)
+
+    # bottom left window
+    stdscr.addstr(leftwindow["top"]-1,leftwindow["left"]+leftwindow["width"],U_BOX_TUP);
+    stdscr.addstr(leftwindow["top"]+leftwindow["height"],leftwindow["left"]+leftwindow["width"],U_BOX_TDOWN)
+    for i in range(leftwindow["top"],leftwindow["top"]+leftwindow["height"]):
+        stdscr.addstr(i,leftwindow["left"]+leftwindow["width"],U_BOX_VERT)
+
+    #order window title
+    stdscr.addstr(orderwindow["top"]-1,orderwindow["left"]+2,U_BOX_TRIGHT+" Orders "+U_BOX_TLEFT)
+
+    #version
+    stdscr.addstr(curses.LINES-1, curses.COLS-len(programversion)-6,U_BOX_TRIGHT+" "+programversion+" "+U_BOX_TLEFT)
 
 #draw the price chart for 1 thread
 def drawchart(threadno,stdscr):
@@ -395,45 +452,6 @@ def setwindowsizes():
     orderwindow["width"]=leftwindow ["width"]
     orderwindow["height"]=leftwindow ["height"] 
 
-def drawframe(stdscr):
-    stdscr.clear()
-
-     
-    # draw corners
-    stdscr.addstr(0,0,U_BOX_TOPLEFT); stdscr.addstr(0,curses.COLS-1,U_BOX_TOPRIGHT);stdscr.addstr(curses.LINES-1,0,U_BOX_BOTLEFT);
-    # bottom right corner will raise an exception because addstr can't move the cursor to the next line    
-    try: stdscr.addstr(curses.LINES-1,curses.COLS-1,U_BOX_BOTRIGHT);
-    except: pass
-    # edge lines
-    for i in range(1,curses.COLS-1):
-        stdscr.addstr(0,i,U_BOX_HORZ); stdscr.addstr(curses.LINES-1,i,U_BOX_HORZ);
-        stdscr.addstr(statswindow["top"]-1,i,U_BOX_HORZ);stdscr.addstr(statswindow["top"]+statswindow["height"],i,U_BOX_HORZ)
-    for i in range(1,curses.LINES-1):
-        stdscr.addstr(i,0,U_BOX_VERT); stdscr.addstr(i,curses.COLS-1,U_BOX_VERT)
-    #statswindow corners
-        stdscr.addstr(statswindow["top"]-1,0,U_BOX_TLEFT);stdscr.addstr(statswindow["top"]+statswindow["height"],0,U_BOX_TLEFT)
-        stdscr.addstr(statswindow["top"]-1,curses.COLS-1,U_BOX_TRIGHT);
-        stdscr.addstr(statswindow["top"]+statswindow["height"],curses.COLS-1,U_BOX_TRIGHT)
-    stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+' Stats '+U_BOX_TLEFT);
-    
-    # statusbar
-    if settings["testmode"]: testwarningstr="- TEST! - | "
-    else: testwarningstr=""
-    stdscr.addstr(0,2,U_BOX_TRIGHT+' '+testwarningstr+'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"]+' '+U_BOX_TLEFT)
-    stdscr.addstr(0,curses.COLS-16,U_BOX_TRIGHT+' '+"Refresh:    "+U_BOX_TLEFT)
-
-    # bottom left window
-    stdscr.addstr(leftwindow["top"]-1,leftwindow["left"]+leftwindow["width"],U_BOX_TUP);
-    stdscr.addstr(leftwindow["top"]+leftwindow["height"],leftwindow["left"]+leftwindow["width"],U_BOX_TDOWN)
-    for i in range(leftwindow["top"],leftwindow["top"]+leftwindow["height"]):
-        stdscr.addstr(i,leftwindow["left"]+leftwindow["width"],U_BOX_VERT)
-
-    #order window title
-    stdscr.addstr(orderwindow["top"]-1,orderwindow["left"]+2,U_BOX_TRIGHT+" Orders "+U_BOX_TLEFT)
-
-    #version
-    stdscr.addstr(curses.LINES-1, curses.COLS-len(programversion)-6,U_BOX_TRIGHT+" "+programversion+" "+U_BOX_TLEFT)
-
 # draw the whole screen
 def drawwindow(stdscr):
     global actualthread
@@ -567,19 +585,23 @@ def main(stdscr):
     stdscr.nodelay(1)
     while True:
         #curses.curs_set(True)   
-        leftprint("Getting balances and symbol info")
+        drawstatus(stdscr,"Getting balances and symbol info")
         getbalances()        
         for i in range(0,len(pybot_threads)):
             leftprint(pybot_threads[i]["asset1"]+':'+pybot_threads[i]["asset1balance"])
             leftprint(pybot_threads[i]["asset2"]+':'+pybot_threads[i]["asset2balance"])
             #pybot_threads[i]["symbol_info"]=client.get_symbol_info(pybot_threads[i]["asset1"]+pybot_threads[i]["asset2"])
             #print(pybot_threads[i]["symbol_info"]["symbol"]+' Status: '+pybot_threads[i]["symbol_info"]["status"]+' SpotAllowed: '+str(pybot_threads[i]["symbol_info"]["isSpotTradingAllowed"])+chr(13))
-
+        candledataprogressbar = "["+".." * len(pybot_threads) + "]"
         for actthread in range(0,len(pybot_threads)):
             curses.curs_set(True)
+            candledataprogressbar=candledataprogressbar[:actthread*2+1] + ">>" + candledataprogressbar[actthread*2+3:]
+            drawstatus(stdscr,"Getting candledata for "+pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"]+' '+Client.KLINE_INTERVAL_15MINUTE+" "+candledataprogressbar+" "+str(int((actthread+1) / len(pybot_threads)*100)) + " %")
+
             getcandles(actthread)
-            leftprint("Get current price")
-            pybot_threads[actthread]["currentprice"] = float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
+            # price from avg price query
+            #pybot_threads[actthread]["currentprice"] = float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
+            pybot_threads[actthread]["currentprice"] = pricedata[actualthread][len(pricedata[actualthread])-1]["pclose"]
             curses.curs_set(False)
 
             oktobuycounter=0
@@ -699,6 +721,10 @@ USDT:  94.25064413
 https://binance-docs.github.io/apidocs/spot/en/#introduction
 https://testnet.binance.vision/
 curl https://testnet.binance.vision/api/v3/exchangeInfo
+
+
+unicorn binance api
+https://github.com/LUCIT-Systems-and-Development/unicorn-binance-websocket-api
 
 
 pip install python-binance
