@@ -47,6 +47,7 @@ U_CHECKMARK  = "✔️"
 U_ARROWUP    = "↑"
 U_ARROWDOWN  = "↓"
 U_BULLET     = "•"
+U_DOT        = "·"
 
 U_BOX_HORZ  = "─"
 U_BOX_VERT  = "│"
@@ -86,9 +87,11 @@ for line in urllib.request.urlopen("https://raw.githubusercontent.com/Deybacsi/p
 v=open('version.no','w'); v.write(programversion); v.close()
 
 # init debug log, and dl()
-d=open('log/debug.log','w'); d.close()
+now=datetime.datetime.now()
+debuglogprefix=now.strftime("%Y-%m-%d_%H:%M:%S")
+d=open('log/'+debuglogprefix+'debug.log','w'); d.close()
 def dl(str):
-    d=open('log/debug.log','a')
+    d=open('log/'+debuglogprefix+'debug.log','a')
     d.write(str+chr(13))
     d.close()
 
@@ -330,7 +333,6 @@ def drawchart(threadno,stdscr):
         if actprice["plow"]==pricemin:
             stdscr.addstr(chartwindowheight+1,chartwindowwidth-i,str(pricemin))
 
-
 def draworders(stdscr):
     # order list
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+7 ,pybot_threads[actualthread]["asset1"])
@@ -377,7 +379,6 @@ def draworders(stdscr):
             # price
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+32
                 -len(str(round(float(actorder["fills"][0]["price"]),2))), str(round(float(actorder["fills"][0]["price"]),2)),ordercolor)
-
 
 def setwindowsizes():
     # setup "windows" in lame ways
@@ -447,7 +448,7 @@ def drawwindow(stdscr):
 
     
     # thread stats
-    stdscr.addstr(statswindow["top"],statswindow["left"]+40, str(pricedata[actualthread][len(pricedata[actualthread])-1]["pclose"]))
+    stdscr.addstr(statswindow["top"],statswindow["left"]+40, "ACT:"+str(pricedata[actualthread][len(pricedata[actualthread])-1]["pclose"]))
     stdscr.addstr(statswindow["top"],statswindow["left"],'Price: '+str(pybot_threads[actualthread]["currentprice"])+' '+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
     stdscr.addstr(statswindow["top"]+1,statswindow["left"],'Balances:')
     stdscr.addstr(statswindow["top"]+2,statswindow["left"],pybot_threads[actualthread]["asset1"]+':')
@@ -455,17 +456,20 @@ def drawwindow(stdscr):
     stdscr.addstr(statswindow["top"]+3,statswindow["left"],pybot_threads[actualthread]["asset2"]+':')
     stdscr.addstr(statswindow["top"]+3,statswindow["left"]+7,str(pybot_threads[actualthread]["asset2balance"]))
     # candles to buy/sell at right
-    stdscr.addstr(statswindow["top"]  ,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestosell"]+1-17,"Candles to sell |")
-    stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestobuy"] +1-16,"Candles to buy |")
+    stdscr.addstr(statswindow["top"]  ,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestosell"]-16,"Candles to sell ")
+    stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-pybot_threads[actualthread]["candlestobuy"] -15,"Candles to buy ")
     # draw S and B indicators
     # SELL
-    for i in range(0,pybot_threads[actualthread]["candlestosell"]):
+    # +1 because we dont need the last cande, only the closed ones
+    for i in range(1,pybot_threads[actualthread]["candlestosell"]+1):
         if pricedata[actualthread][len(pricedata[actualthread])-1-i]["above"]==True:
-            stdscr.addstr(statswindow["top"],chartwindow["left"]+chartwindow["width"]-i,U_CHECKMARK,curses.color_pair(3))
+            stdscr.addstr(statswindow["top"]  ,chartwindow["left"]+chartwindow["width"]-i,U_CHECKMARK,curses.color_pair(3))
+        else: stdscr.addstr(statswindow["top"]  ,chartwindow["left"]+chartwindow["width"]-i,U_DOT,curses.A_DIM)
     # BUY
-    for i in range(0,pybot_threads[actualthread]["candlestobuy"]):
+    for i in range(1,pybot_threads[actualthread]["candlestobuy"]+1):
         if pricedata[actualthread][len(pricedata[actualthread])-1-i]["below"]==True:
             stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,U_CHECKMARK,curses.color_pair(2))
+        else: stdscr.addstr(statswindow["top"]+1,chartwindow["left"]+chartwindow["width"]-i,U_DOT,curses.A_DIM)
 
 
 
@@ -474,13 +478,7 @@ def drawwindow(stdscr):
 
     stdscr.refresh()
     #leftprint("")
-    leftwin.clrtoeol()
     leftwin.refresh()
-
-
-    
-
-
 
 # calc 1 order-  substract trading fee amount
 def calcbuyorderqty(order):
@@ -497,7 +495,6 @@ def calcsellorderqty(order):
         quantity -= float(order["fills"][i]["commission"])
     return round(quantity,8)
                 
-
 def loadorders(threadno):
     pybot_threads[threadno]["orders"]=[]
     if settings["testmode"]: tfilename="-test"
@@ -529,7 +526,7 @@ def saveorder(threadno,order):
 # main prog
 def main(stdscr):
     global leftwin
-    stdscr.refresh()
+    #stdscr.refresh()
     global actualthread
     pressedkey=0
 
@@ -569,10 +566,7 @@ def main(stdscr):
 
     stdscr.nodelay(1)
     while True:
-
-        curses.curs_set(True)
-        #stdscr.clear()
-        #stdscr.refresh()        
+        #curses.curs_set(True)   
         leftprint("Getting balances and symbol info")
         getbalances()        
         for i in range(0,len(pybot_threads)):
@@ -591,8 +585,9 @@ def main(stdscr):
             oktobuycounter=0
             oktosellcounter=0
             # count prev candles if below
-            for i in range(len(pricedata[actthread])-1,
-                    len(pricedata[actthread])-1-pybot_threads[actthread]["candlestobuy"],-1):
+            # the last candle has the current data
+            # we only want closed candles -> this is why len-2
+            for i in range(len(pricedata[actthread])-2, len(pricedata[actthread])-2-pybot_threads[actthread]["candlestobuy"],-1):   
                 if pricedata[actthread][i]["below"]==True:
                     oktobuycounter += 1
             # check current price if below
@@ -601,7 +596,7 @@ def main(stdscr):
                 pybot_threads[actthread]["currentprice"]<pricedata[actthread][len(pricedata[actthread])-1]["ma99"]):
                     oktobuycounter += 1
             # prev candles  if above
-            for i in range(len(pricedata[actthread])-1,len(pricedata[actthread])-1-pybot_threads[actthread]["candlestosell"],-1):                
+            for i in range(len(pricedata[actthread])-2,len(pricedata[actthread])-2-pybot_threads[actthread]["candlestosell"],-1):                
                 if pricedata[actthread][i]["above"]==True:
                     oktosellcounter += 1
             #check current price if above
@@ -651,6 +646,7 @@ def main(stdscr):
             stdscr.addstr(0,curses.COLS-5,"  ")
             stdscr.addstr(0,curses.COLS-5,str(60-elapsed))
             stdscr.refresh()
+            leftwin.refresh()
             time.sleep(0.25) 
 
 
@@ -663,10 +659,11 @@ def main(stdscr):
                     leftwin.refresh()
                     stdscr.refresh()
                     
+                    
 
             # ESC
             if pressedkey==27:
-                curses.endwin(); print();print(); print("Thanks for using",programname,programversion); print(); exit()
+                curses.endwin(); print("\n\nThanks for using",programname,programversion); print(); exit()
             # window resize
             if pressedkey==curses.KEY_RESIZE:
                 curses.LINES, curses.COLS = stdscr.getmaxyx()
@@ -677,12 +674,18 @@ def main(stdscr):
 
 print("Initializing screen")
 
-
-try:
-    wrapper(main)
-except Exception as e:
-    dl(str(traceback.format_exc()))
-    print(traceback.format_exc())
+while True:
+    try:
+        wrapper(main)
+    except Exception as e:
+        print("\n\nError occured:")
+        dl(str(datetime.datetime.now() )+' local')
+        dl(str(traceback.format_exc()))
+        print(traceback.format_exc())
+        maxsecs=10
+        for i in range (maxsecs,1,-1):
+            print("\rWaiting",maxsecs,"seconds to recover:",i,"   ", end='')
+            time.sleep(1)
 
 
 
