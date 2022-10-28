@@ -395,9 +395,9 @@ def draworders(stdscr):
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[1]+4,"Price",curses.A_BOLD)
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[2]+4,pybot_threads[actualthread]["asset1"],curses.A_BOLD)
     stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[3]+4,pybot_threads[actualthread]["asset2"],curses.A_BOLD)
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[4]+2,"P/L "+str(pybot_threads[actualthread]["asset2"]),curses.A_BOLD)
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[5]+4,"P/L %",curses.A_BOLD)
 
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[4]+4,"P/L %",curses.A_BOLD)
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[5]+2,"P/L "+str(pybot_threads[actualthread]["asset2"]),curses.A_BOLD)
     for i in range(0,orderwindow["height"]):
         for j in range(0,len(ordcolsx)): 
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[j]-1,U_BOX_VERTDOT, curses.A_DIM)
@@ -419,8 +419,9 @@ def draworders(stdscr):
                 # asset2
                 printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[3],actsellorderqty,ordercolor)
                 # P/L
-                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitlosspercent,ordercolor,2)
-                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlossamount,ordercolor,2)
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitlossamount,ordercolor,2)                
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlosspercent,ordercolor,2)
+
 
 
 

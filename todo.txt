@@ -1,14 +1,7 @@
+rolling tőke
 
-window
-        setupok
-        subwindowba az updatet
-chart   
-        unicode karakterek
-        dátumok, idők alulra
-        buy, sell orderek jelölése
-orders
+heti/havi profitból buy adott coint, pl btc-t
 
-        minprofit alatti sell orderek?
 
 
 -----------------
@@ -20,3 +13,15 @@ Aztán ha ár<X*DCAszint% -> buy valamennyit
 -----------------
 felülre kiírhatná a last refresh időt
 vagy az aktuálisat
+
+
+window
+        setupok
+        subwindowba az updatet
+chart   
+        unicode karakterek
+        dátumok, idők alulra
+        buy, sell orderek jelölése
+orders
+
+        minprofit alatti sell orderek?
