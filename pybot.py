@@ -34,11 +34,13 @@ refreshtime=60
 # counter for elapsed time in seconds
 elapsed = 0
 
+minwindowx=92
+minwindowy=33
+
 # shitty subwindows defs, values recalculated in drawwindow
 chartwindow={"top" : 3,"left": 1, "width":0, "height":0}
 statswindow={"top" : 2,"left": 1, "width":0,"height":0}
 orderwindow={"top" : 2,"left": 1,"width":0,"height":0}
-leftwindow ={"top" : 2,"left": 1,"width":0,"height":0}
 
 U_CANDLEBODY = "▉"
 U_CANDLEWICK = "│"
@@ -92,8 +94,8 @@ v=open('version.no','w'); v.write(programversion); v.close()
 
 # init debug log, and dl()
 now=datetime.datetime.now()
-debuglogprefix=now.strftime("%Y-%m-%d_%H:%M:%S")
-d=open('log/'+debuglogprefix+' debug.log','w'); d.close()
+debuglogprefix=now.strftime("%Y-%m-%d_%H:%M:%S")+" "
+d=open('log/'+debuglogprefix+'debug.log','w'); d.close()
 def dl(str):
     d=open('log/'+debuglogprefix+'debug.log','a')
     d.write(str+chr(13))
@@ -157,12 +159,6 @@ if settings["testmode"]: print("!!! TESTMODE !!!"); client = Client(settings["ta
 else: client = Client(settings["apikey"], settings["apisecret"]); 
 print("OK")   
 
-
-def leftprint(str):
-    global leftwin
-    #leftwin.addstr(str+chr(10)+chr(13))
-    #leftwin.refresh()
-
 # get current exchange balances for all threads
 def getbalances():
     # always query 0.thread's pairs
@@ -190,7 +186,6 @@ def getbalances():
 
 # get candle data for 1 thread
 def getcandles(threadno):
-    global leftwin
     for j in range(0,500):
         pricedata[threadno][j]={
             "ptime" : 0,
@@ -205,10 +200,7 @@ def getcandles(threadno):
             "above" : False
         }
     
-    leftprint("Getting candledata for "+pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"]+' '+Client.KLINE_INTERVAL_15MINUTE)
     candles = client.get_klines(symbol=pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"], interval=Client.KLINE_INTERVAL_15MINUTE)
-    leftprint("Got "+str(len(candles))+" candles")
-    leftprint("Calculating moving averages and indicators")
     #populate pricedatas
     for i in range(0,len(candles)):
 
@@ -268,7 +260,7 @@ def drawstatus(stdscr,str):
     stdscr.addstr(curses.LINES-1,2,U_BOX_TRIGHT+"                                                                      "+U_BOX_TLEFT);
     #stdscr.clrtoeol()
     #stdscr.addstr(curses.LINES-1, curses.COLS-2,U_BOX_TLEFT)
-    stdscr.addstr(curses.LINES-1,4,str);        
+    stdscr.addstr(curses.LINES-1,4,str,curses.A_BOLD);        
     stdscr.refresh()
 
 def drawframe(stdscr):
@@ -276,7 +268,9 @@ def drawframe(stdscr):
 
      
     # draw corners
-    stdscr.addstr(0,0,U_BOX_TOPLEFT); stdscr.addstr(0,curses.COLS-1,U_BOX_TOPRIGHT);stdscr.addstr(curses.LINES-1,0,U_BOX_BOTLEFT);
+    stdscr.addstr(0,0,U_BOX_TOPLEFT);
+    stdscr.addstr(0,curses.COLS-1,U_BOX_TOPRIGHT);
+    stdscr.addstr(curses.LINES-1,0,U_BOX_BOTLEFT);
     # bottom right corner will raise an exception because addstr can't move the cursor to the next line    
     try: stdscr.addstr(curses.LINES-1,curses.COLS-1,U_BOX_BOTRIGHT);
     except: pass
@@ -290,22 +284,25 @@ def drawframe(stdscr):
         stdscr.addstr(statswindow["top"]-1,0,U_BOX_TLEFT);stdscr.addstr(statswindow["top"]+statswindow["height"],0,U_BOX_TLEFT)
         stdscr.addstr(statswindow["top"]-1,curses.COLS-1,U_BOX_TRIGHT);
         stdscr.addstr(statswindow["top"]+statswindow["height"],curses.COLS-1,U_BOX_TRIGHT)
-    stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+' Stats '+U_BOX_TLEFT);
+    stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+" ")
+    stdscr.addstr(statswindow["top"]-1,4,"Stats",curses.A_BOLD)
+    stdscr.addstr(" "+U_BOX_TLEFT);
     
-    # statusbar
+    # upper statusbar
     if settings["testmode"]: testwarningstr="- TEST! - | "
     else: testwarningstr=""
-    stdscr.addstr(0,2,U_BOX_TRIGHT+' '+testwarningstr+'Thread '+str(actualthread)+' | '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"]+' '+U_BOX_TLEFT)
+    stdscr.addstr(0,2,U_BOX_TRIGHT+" ")
+    stdscr.addstr(0,4,testwarningstr+'Thread '+str(actualthread)+' '+U_BOX_VERT+' '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
+    stdscr.addstr(' '+U_BOX_TLEFT)
+
+
+    
     stdscr.addstr(0,curses.COLS-16,U_BOX_TRIGHT+' '+"Refresh:    "+U_BOX_TLEFT)
 
-    # bottom left window
-    stdscr.addstr(leftwindow["top"]-1,leftwindow["left"]+leftwindow["width"],U_BOX_TUP);
-    stdscr.addstr(leftwindow["top"]+leftwindow["height"],leftwindow["left"]+leftwindow["width"],U_BOX_TDOWN)
-    for i in range(leftwindow["top"],leftwindow["top"]+leftwindow["height"]):
-        stdscr.addstr(i,leftwindow["left"]+leftwindow["width"],U_BOX_VERT)
-
     #order window title
-    stdscr.addstr(orderwindow["top"]-1,orderwindow["left"]+2,U_BOX_TRIGHT+" Orders "+U_BOX_TLEFT)
+    stdscr.addstr(orderwindow["top"]-1,orderwindow["left"]+1,U_BOX_TRIGHT+" ")
+    stdscr.addstr(orderwindow["top"]-1,orderwindow["left"]+3,"Orders",curses.A_BOLD)
+    stdscr.addstr(" "+U_BOX_TLEFT)
 
     #version
     stdscr.addstr(curses.LINES-1, curses.COLS-len(programversion)-6,U_BOX_TRIGHT+" "+programversion+" "+U_BOX_TLEFT)
@@ -393,12 +390,14 @@ def printfloat(stdscr,y,x,flt,color=0,decimals=8):
 
 def draworders(stdscr):
     # order list
-    ordcolsx=[7,26,39,52,65]
+    ordcolsx=[7,26,39,52,65,78]
 
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[1]+10-len(pybot_threads[actualthread]["asset1"]),pybot_threads[actualthread]["asset1"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[2]+10-len(pybot_threads[actualthread]["asset2"]),pybot_threads[actualthread]["asset2"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[3]+10-5,"Price")
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[4]+10-8,"P/L "+str(pybot_threads[actualthread]["minprofit"])+'%')
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[1]+4,"Price",curses.A_BOLD)
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[2]+4,pybot_threads[actualthread]["asset1"],curses.A_BOLD)
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[3]+4,pybot_threads[actualthread]["asset2"],curses.A_BOLD)
+
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[4]+4,"P/L %",curses.A_BOLD)
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[5]+2,"P/L "+str(pybot_threads[actualthread]["asset2"]),curses.A_BOLD)
     for i in range(0,orderwindow["height"]):
         for j in range(0,len(ordcolsx)): 
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[j]-1,U_BOX_VERTDOT, curses.A_DIM)
@@ -411,22 +410,25 @@ def draworders(stdscr):
             prevsellorderqty=calcsellorderqty(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1])
             # if sell, calculate P/L, and set corresponding color
             if actorder["side"]=="SELL":
-                #profitloss=round((float(actorder["cummulativeQuoteQty"])/float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i-1]["cummulativeQuoteQty"])-1)*100,2)
-                profitloss=round((actsellorderqty/prevsellorderqty-1)*100,2)
-                if profitloss>=0: ordercolor=curses.color_pair(3)
+                profitlosspercent=round((actsellorderqty/prevsellorderqty-1)*100,2)
+                if profitlosspercent>=0: ordercolor=curses.color_pair(3)
                 else: ordercolor=curses.color_pair(2)
+                profitlossamount=actsellorderqty-prevsellorderqty
                 # asset1
-                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[1],actorder["executedQty"],ordercolor)
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[2],actorder["executedQty"],ordercolor)
                 # asset2
-                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[2],actsellorderqty,ordercolor)
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[3],actsellorderqty,ordercolor)
                 # P/L
-                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitloss,ordercolor,2)
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitlosspercent,ordercolor,2)
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlossamount,ordercolor)
+
+
 
             else: # buy order
                 # asset1
-                printfloat(stdscr,orderwindow["top"]+1+i,orderwindow["left"]+ordcolsx[1],actbuyorderqty)      
+                printfloat(stdscr,orderwindow["top"]+1+i,orderwindow["left"]+ordcolsx[2],actbuyorderqty)      
                 # asset2   
-                printfloat(stdscr, orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[2],actorder["cummulativeQuoteQty"])        
+                printfloat(stdscr, orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[3],actorder["cummulativeQuoteQty"])        
 
 
             # buy/sell
@@ -436,7 +438,7 @@ def draworders(stdscr):
             stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[0]+1,trtime[:-9],ordercolor)
 
             # price
-            printfloat(stdscr, orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[3],actorder["fills"][0]["price"],ordercolor)
+            printfloat(stdscr, orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[1],actorder["fills"][0]["price"],ordercolor)
 
 def setwindowsizes():
     # setup "windows" in lame ways
@@ -445,27 +447,22 @@ def setwindowsizes():
     statswindow["top"]=chartwindow["top"]+chartwindow["height"]+4
     statswindow["width"]=chartwindow["width"]
     statswindow["height"]=5
-    leftwindow ["top"]=statswindow["top"]+statswindow["height"]+1
-    leftwindow ["width"]=int(curses.COLS/2)
-    leftwindow ["height"]=curses.LINES-leftwindow["top"]-1
-    
-    #orderwindow["top"]=leftwindow ["top"]
-    #orderwindow["left"]=int(curses.COLS/2)+1
-    #orderwindow["width"]=leftwindow ["width"]
-    #orderwindow["height"]=leftwindow ["height"] 
 
     orderwindow["top"]=statswindow["top"]+statswindow["height"]+1
     orderwindow["left"]=1
     orderwindow["width"]=curses.COLS -1 - orderwindow["left"]  -1
     orderwindow["height"]=curses.LINES-1- orderwindow["top"]   -1
 
+spinner=0
 # draw the whole screen
 def drawwindow(stdscr):
     global actualthread
-    global leftwin
+    global spinner
     # if window too small
-    if curses.COLS<80 or curses.LINES<33:
-        stdscr.clear(); stdscr.addstr(12,2,"Increase window size :) "); return
+    spinner +=1
+    if curses.COLS<minwindowx or curses.LINES<minwindowy:
+        sizewarningstr="Increase window size to min "+str(minwindowx)+"x"+str(minwindowy)
+        stdscr.clear(); stdscr.addstr(int(curses.LINES/2),int((curses.COLS-len(sizewarningstr))/2),sizewarningstr); return
  
     setwindowsizes()
     drawframe(stdscr)
@@ -502,8 +499,7 @@ def drawwindow(stdscr):
     draworders(stdscr)
 
     stdscr.refresh()
-    #leftprint("")
-    leftwin.refresh()
+
 
 # calc 1 order-  substract trading fee amount
 def calcbuyorderqty(order):
@@ -550,11 +546,10 @@ def saveorder(threadno,order):
 
 # main prog
 def main(stdscr):
-    global leftwin
     #stdscr.refresh()
     global actualthread
     pressedkey=0
-
+    """
     stdscr.addstr('Windowsize:'+str(curses.COLS)+'x'+str(curses.LINES))
     if curses.COLS<80 or curses.LINES<33:
         curses.endwin();
@@ -563,6 +558,7 @@ def main(stdscr):
 
         exit()
     print("dummy")
+    """
 
     # Clear screen
     curses.init_pair(1, curses.COLOR_WHITE, curses.COLOR_BLUE)
@@ -580,25 +576,13 @@ def main(stdscr):
     curses.curs_set(False)
 
     setwindowsizes()
-
     drawframe(stdscr)
     stdscr.refresh()
-    leftwin=curses.newwin(leftwindow["height"], leftwindow["left"]+leftwindow["width"]-1, leftwindow["top"], leftwindow["left"])
-    leftwin.scrollok(True)
-    leftwin.refresh()
-    
-
-
     stdscr.nodelay(1)
     while True:
         #curses.curs_set(True)   
         drawstatus(stdscr,"Getting balances and symbol info")
         getbalances()        
-        for i in range(0,len(pybot_threads)):
-            leftprint(pybot_threads[i]["asset1"]+':'+pybot_threads[i]["asset1balance"])
-            leftprint(pybot_threads[i]["asset2"]+':'+pybot_threads[i]["asset2balance"])
-            #pybot_threads[i]["symbol_info"]=client.get_symbol_info(pybot_threads[i]["asset1"]+pybot_threads[i]["asset2"])
-            #print(pybot_threads[i]["symbol_info"]["symbol"]+' Status: '+pybot_threads[i]["symbol_info"]["status"]+' SpotAllowed: '+str(pybot_threads[i]["symbol_info"]["isSpotTradingAllowed"])+chr(13))
         candledataprogressbar = "["+".." * len(pybot_threads) + "]"
         for actthread in range(0,len(pybot_threads)):
             curses.curs_set(True)
@@ -654,9 +638,11 @@ def main(stdscr):
             for i in range(0,len(coininfo["filters"])):
                 if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
                     # rounding because of 64b floating point fuckery
-                    sellingqty=round(lastorderqty - (lastorderqty % float(coininfo["filters"][i]["minQty"])),8)
+                    minimumqty=float(coininfo["filters"][i]["minQty"])
+                    sellingqty=round(lastorderqty - (lastorderqty % minimumqty),8)
 
-            stdscr.addstr(statswindow["top"]+1,statswindow["left"]+40,str(sellingqty))
+            #stdscr.addstr(statswindow["top"]+1,statswindow["left"]+40,str(sellingqty))
+            dl(pybot_threads[actthread]["asset1"]+" buyqty:"+str(lastorderqty)+" minqty:"+str(minimumqty)+" sellqty:"+str(sellingqty))
             dl (str(sellingqty))
             dl (str(round(sellingqty,8)))
 
@@ -683,7 +669,6 @@ def main(stdscr):
             stdscr.addstr(0,curses.COLS-5,"  ")
             stdscr.addstr(0,curses.COLS-5,str(60-elapsed))
             stdscr.refresh()
-            leftwin.refresh()
             time.sleep(0.25) 
 
 
@@ -693,7 +678,6 @@ def main(stdscr):
                 if pressedkey-48<len(pybot_threads):
                     actualthread = pressedkey-48
                     drawwindow(stdscr)
-                    leftwin.refresh()
                     stdscr.refresh()
                     
                     
