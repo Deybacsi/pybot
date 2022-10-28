@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.05"
+programversion="v0.1.06"
 
 print(programname, programversion)
 
@@ -422,14 +422,19 @@ def draworders(stdscr):
                 printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitlossamount,ordercolor,2)                
                 printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlosspercent,ordercolor,2)
 
-
-
-
             else: # buy order
+                # if it's the last buy order, then show actual positions's p/l percent
+                if i==0:
+                    buycumulativeqty=float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]["fills"][0]["price"])
+                    #profitlosspercent=round((pricedata[actualthread][len(pricedata[actualthread])-1]["pclose"]/buycumulativeqty-1)*100,2)
+                    profitlosspercent=round((pybot_threads[actualthread]["currentprice"]/buycumulativeqty-1)*100,2)
+                    
+                    printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlosspercent,ordercolor,2)
                 # asset1
                 printfloat(stdscr,orderwindow["top"]+1+i,orderwindow["left"]+ordcolsx[2],actbuyorderqty)      
                 # asset2   
                 printfloat(stdscr, orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[3],actorder["cummulativeQuoteQty"])        
+                
 
 
             # buy/sell
@@ -593,7 +598,7 @@ def main(stdscr):
             getcandles(actthread)
             # price from avg price query
             #pybot_threads[actthread]["currentprice"] = float(client.get_avg_price(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])["price"])
-            pybot_threads[actthread]["currentprice"] = pricedata[actualthread][len(pricedata[actualthread])-1]["pclose"]
+            pybot_threads[actthread]["currentprice"] = pricedata[actthread][len(pricedata[actthread])-1]["pclose"]
             curses.curs_set(False)
 
             oktobuycounter=0
@@ -652,13 +657,7 @@ def main(stdscr):
                     and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
 
-
                 saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=sellingqty))
-
-
-
-
-
 
         drawwindow(stdscr)
         
@@ -666,12 +665,10 @@ def main(stdscr):
         elapsed=0
         while elapsed < refreshtime:
             elapsed = int(time.time() - start)
-            
             stdscr.addstr(0,curses.COLS-5,"  ")
             stdscr.addstr(0,curses.COLS-5,str(60-elapsed))
             stdscr.refresh()
             time.sleep(0.25) 
-
 
             pressedkey=stdscr.getch()
             # num buttons
@@ -680,8 +677,6 @@ def main(stdscr):
                     actualthread = pressedkey-48
                     drawwindow(stdscr)
                     stdscr.refresh()
-                    
-                    
 
             # ESC
             if pressedkey==27:
@@ -693,7 +688,6 @@ def main(stdscr):
                 stdscr.refresh()
 
    
-
 print("Initializing screen")
 
 while True:
