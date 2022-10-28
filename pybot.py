@@ -17,6 +17,8 @@ import urllib.request
 import curses               # windows: windows-curses
 from curses import wrapper
 import traceback
+
+from numpy import std
 print("Starting Binance module")
 from binance.client import Client
 from binance import ThreadedWebsocketManager
@@ -56,6 +58,8 @@ U_BOX_VERTH = "╵"
 
 
 U_BOX_HORZDOT= "┈"
+U_BOX_VERTDOT= "┊"
+
 
 U_BOX_TOPLEFT   = "┌"
 U_BOX_TOPRIGHT  = "┐" 
@@ -90,7 +94,7 @@ v=open('version.no','w'); v.write(programversion); v.close()
 # init debug log, and dl()
 now=datetime.datetime.now()
 debuglogprefix=now.strftime("%Y-%m-%d_%H:%M:%S")
-d=open('log/'+debuglogprefix+'debug.log','w'); d.close()
+d=open('log/'+debuglogprefix+' debug.log','w'); d.close()
 def dl(str):
     d=open('log/'+debuglogprefix+'debug.log','a')
     d.write(str+chr(13))
@@ -153,13 +157,6 @@ print("Connecting to Binance API ", end='')
 if settings["testmode"]: print("!!! TESTMODE !!!"); client = Client(settings["tapikey"], settings["tapisecret"], testnet=True)
 else: client = Client(settings["apikey"], settings["apisecret"]); 
 print("OK")   
-
-def handle_socket_message(msg):
-    print(f"message type: {msg['e']}")
-    print(msg)
-    dl(str(msg['e']))
-    dl(str(msg))
-
 
 
 def leftprint(str):
@@ -273,7 +270,6 @@ def drawstatus(stdscr,str):
     #stdscr.clrtoeol()
     #stdscr.addstr(curses.LINES-1, curses.COLS-2,U_BOX_TLEFT)
     stdscr.addstr(curses.LINES-1,4,str);        
-
     stdscr.refresh()
 
 def drawframe(stdscr):
@@ -390,13 +386,26 @@ def drawchart(threadno,stdscr):
         if actprice["plow"]==pricemin:
             stdscr.addstr(chartwindowheight+1,chartwindowwidth-i,str(pricemin))
 
+def printfloat(stdscr,y,x,flt,color=0):
+    flt=float(flt)
+    if abs(flt)>=1: sflt=format(flt, '.2f')
+    else: 
+        if abs(flt)>0.01 and abs(flt)<1:
+            sflt=format(flt, '.2f')
+        else: sflt=format(flt, '.8f')
+    stdscr.addstr(y,x+11-len(sflt),sflt,color)
+
 def draworders(stdscr):
     # order list
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+7 ,pybot_threads[actualthread]["asset1"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+16,pybot_threads[actualthread]["asset2"])
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+25,"Price")
-    stdscr.addstr(orderwindow["top"], orderwindow["left"]+7+17+34,"P/L "+str(pybot_threads[actualthread]["minprofit"])+'%')
+    ordcolsx=[7,26,39,52,65]
+
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[1]+10-len(pybot_threads[actualthread]["asset1"]),pybot_threads[actualthread]["asset1"])
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[2]+10-len(pybot_threads[actualthread]["asset2"]),pybot_threads[actualthread]["asset2"])
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[3]+10-5,"Price")
+    stdscr.addstr(orderwindow["top"], orderwindow["left"]+ordcolsx[4]+10-8,"P/L "+str(pybot_threads[actualthread]["minprofit"])+'%')
     for i in range(0,orderwindow["height"]):
+        for j in range(0,len(ordcolsx)): 
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[j]-1,U_BOX_VERTDOT, curses.A_DIM)
         if len(pybot_threads[actualthread]["orders"])-1-i>=0:
             actorder=pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]
             ordercolor=curses.color_pair(0)
@@ -411,31 +420,27 @@ def draworders(stdscr):
                 if profitloss>=0: ordercolor=curses.color_pair(3)
                 else: ordercolor=curses.color_pair(2)
                 # asset1
-                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
-                    -len(str(float(actorder["executedQty"]))), str(float(actorder["executedQty"])),ordercolor)         
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[1],actorder["executedQty"],ordercolor)
                 # asset2
-                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
-                    -len(str(actsellorderqty)), str(actsellorderqty),ordercolor)   
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[2],actsellorderqty,ordercolor)
+                # P/L
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitloss,ordercolor)
 
-                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+49-len(str(profitloss)),str(profitloss)+'%',ordercolor)
             else: # buy order
                 # asset1
-                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14
-                    -len(str(actbuyorderqty)), str(actbuyorderqty),ordercolor)         
-                # asset2
-                stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+14+8
-                    -len(str(round(float(actorder["cummulativeQuoteQty"]),2))), str(round(float(actorder["cummulativeQuoteQty"]),2)),ordercolor)                
+                printfloat(stdscr,orderwindow["top"]+1+i,orderwindow["left"]+ordcolsx[1],actbuyorderqty)      
+                # asset2   
+                printfloat(stdscr, orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[2],actorder["cummulativeQuoteQty"])        
 
 
             # buy/sell
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+2,actorder["side"],ordercolor)
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+1,actorder["side"],ordercolor)
             # date
             trtime=str(datetime.datetime.fromtimestamp(int(actorder["transactTime"]/1000), tz=timezone.utc ))
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7   ,trtime[:-9],ordercolor)
+            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[0]+1,trtime[:-9],ordercolor)
 
             # price
-            stdscr.addstr(orderwindow["top"]+1+i, orderwindow["left"]+7+17+32
-                -len(str(round(float(actorder["fills"][0]["price"]),2))), str(round(float(actorder["fills"][0]["price"]),2)),ordercolor)
+            printfloat(stdscr, orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[3],actorder["fills"][0]["price"],ordercolor)
 
 def setwindowsizes():
     # setup "windows" in lame ways
@@ -447,10 +452,16 @@ def setwindowsizes():
     leftwindow ["top"]=statswindow["top"]+statswindow["height"]+1
     leftwindow ["width"]=int(curses.COLS/2)
     leftwindow ["height"]=curses.LINES-leftwindow["top"]-1
-    orderwindow["top"]=leftwindow ["top"]
-    orderwindow["left"]=int(curses.COLS/2)+1
-    orderwindow["width"]=leftwindow ["width"]
-    orderwindow["height"]=leftwindow ["height"] 
+    
+    #orderwindow["top"]=leftwindow ["top"]
+    #orderwindow["left"]=int(curses.COLS/2)+1
+    #orderwindow["width"]=leftwindow ["width"]
+    #orderwindow["height"]=leftwindow ["height"] 
+
+    orderwindow["top"]=statswindow["top"]+statswindow["height"]+1
+    orderwindow["left"]=1
+    orderwindow["width"]=curses.COLS -1 - orderwindow["left"]  -1
+    orderwindow["height"]=curses.LINES-1- orderwindow["top"]   -1
 
 # draw the whole screen
 def drawwindow(stdscr):
@@ -639,24 +650,32 @@ def main(stdscr):
                 saveorder(actthread,client.order_market_buy(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quoteOrderQty=pybot_threads[actthread]["quantity"]))
                 pass
 
+
+            coininfo = client.get_symbol_info(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
+            sellingqty=0.0
+            lastorderqty=calcbuyorderqty(lastorder)
+            # round selling qty to the min needed number of decimals
+            for i in range(0,len(coininfo["filters"])):
+                if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
+                    # rounding because of 64b floating point fuckery
+                    sellingqty=round(lastorderqty - (lastorderqty % float(coininfo["filters"][i]["minQty"])),8)
+
+            stdscr.addstr(statswindow["top"]+1,statswindow["left"]+40,str(sellingqty))
+            dl (str(sellingqty))
+            dl (str(round(sellingqty,8)))
+
             # sell order with minprofit checking
             if (oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
                     and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
 
-                coininfo = client.get_symbol_info(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
-                sellingqty=0.0
-                lastorderqty=calcbuyorderqty(lastorder)
-                # round selling qty to the min needed number of decimals
-                for i in range(0,len(coininfo["filters"])):
-                    if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
-                        # rounding because of 64b floating point fuckery
-                        sellingqty=round(lastorderqty - (lastorderqty % float(coininfo["filters"][i]["minQty"])),8)
 
-                dl (str(sellingqty))
-                dl (str(round(sellingqty,8)))
                 saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=sellingqty))
-            
+
+
+
+
+
 
         drawwindow(stdscr)
         
