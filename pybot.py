@@ -385,13 +385,10 @@ def drawchart(threadno,stdscr):
         if actprice["plow"]==pricemin:
             stdscr.addstr(chartwindowheight+1,chartwindowwidth-i,str(pricemin))
 
-def printfloat(stdscr,y,x,flt,color=0):
+def printfloat(stdscr,y,x,flt,color=0,decimals=8):
     flt=float(flt)
     if abs(flt)>=1: sflt=format(flt, '.2f')
-    else: 
-        if abs(flt)>0.01 and abs(flt)<1:
-            sflt=format(flt, '.2f')
-        else: sflt=format(flt, '.8f')
+    else: sflt=format(flt, '.'+str(decimals)+'f')
     stdscr.addstr(y,x+11-len(sflt),sflt,color)
 
 def draworders(stdscr):
@@ -423,7 +420,7 @@ def draworders(stdscr):
                 # asset2
                 printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[2],actsellorderqty,ordercolor)
                 # P/L
-                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitloss,ordercolor)
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitloss,ordercolor,2)
 
             else: # buy order
                 # asset1
