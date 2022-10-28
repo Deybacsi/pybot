@@ -18,7 +18,6 @@ import curses               # windows: windows-curses
 from curses import wrapper
 import traceback
 
-from numpy import std
 print("Starting Binance module")
 from binance.client import Client
 from binance import ThreadedWebsocketManager
