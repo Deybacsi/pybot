@@ -420,7 +420,7 @@ def draworders(stdscr):
                 printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[3],actsellorderqty,ordercolor)
                 # P/L
                 printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[4],profitlosspercent,ordercolor,2)
-                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlossamount,ordercolor)
+                printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlossamount,ordercolor,2)
 
 
 
