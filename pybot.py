@@ -255,7 +255,7 @@ def getcandles(threadno):
 
     fcd.close()
     """
-
+# top status bar
 def drawstatus(stdscr,str):
     stdscr.addstr(curses.LINES-1,2,U_BOX_TRIGHT+"                                                                      "+U_BOX_TLEFT);
     #stdscr.clrtoeol()
@@ -263,10 +263,9 @@ def drawstatus(stdscr,str):
     stdscr.addstr(curses.LINES-1,4,str,curses.A_BOLD);        
     stdscr.refresh()
 
+#draw the window boxes & titles
 def drawframe(stdscr):
     stdscr.clear()
-
-     
     # draw corners
     stdscr.addstr(0,0,U_BOX_TOPLEFT);
     stdscr.addstr(0,curses.COLS-1,U_BOX_TOPRIGHT);
@@ -287,16 +286,13 @@ def drawframe(stdscr):
     stdscr.addstr(statswindow["top"]-1,2,U_BOX_TRIGHT+" ")
     stdscr.addstr(statswindow["top"]-1,4,"Stats",curses.A_BOLD)
     stdscr.addstr(" "+U_BOX_TLEFT);
-    
-    # upper statusbar
+    # top statusbar
     if settings["testmode"]: testwarningstr="- TEST! - | "
     else: testwarningstr=""
     stdscr.addstr(0,2,U_BOX_TRIGHT+" ")
     stdscr.addstr(0,4,testwarningstr+'Thread '+str(actualthread)+' '+U_BOX_VERT+' '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
     stdscr.addstr(' '+U_BOX_TLEFT)
 
-
-    
     stdscr.addstr(0,curses.COLS-16,U_BOX_TRIGHT+' '+"Refresh:    "+U_BOX_TLEFT)
 
     #order window title
@@ -381,6 +377,7 @@ def drawchart(threadno,stdscr):
             stdscr.addstr(chartwindow["top"]-1,chartwindowwidth-i,str(pricemax))
         if actprice["plow"]==pricemin:
             stdscr.addstr(chartwindowheight+1,chartwindowwidth-i,str(pricemin))
+
 
 def printfloat(stdscr,y,x,flt,color=0,decimals=8):
     flt=float(flt)
@@ -628,6 +625,7 @@ def main(stdscr):
             lastorder={}
             if len(pybot_threads[actthread]["orders"])==0:      # if there are no orders, we will start with a buy next
                 lastorder["side"]="SELL"
+                lastorder["fills"]=[{ "price": "0", "qty": "0", "commission": "0.0", "commissionAsset": "BTC", "tradeId": 0}]
             if len(pybot_threads[actthread]["orders"])>0:
                 lastorder=pybot_threads[actthread]["orders"][len(pybot_threads[actthread]["orders"])-1]
 
