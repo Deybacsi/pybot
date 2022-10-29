@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.06"
+programversion="v0.1.07"
 
 print(programname, programversion)
 
@@ -630,9 +630,10 @@ def main(stdscr):
                 lastorder=pybot_threads[actthread]["orders"][len(pybot_threads[actthread]["orders"])-1]
 
             # buy order
-            if oktobuycounter==pybot_threads[actthread]["candlestobuy"]+1 and lastorder["side"]=="SELL":
+
+            if not pybot_threads[actthread]["stopped"] and oktobuycounter==pybot_threads[actthread]["candlestobuy"]+1 and lastorder["side"]=="SELL":
                 saveorder(actthread,client.order_market_buy(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quoteOrderQty=pybot_threads[actthread]["quantity"]))
-                pass
+                
 
 
             coininfo = client.get_symbol_info(pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"])
@@ -651,7 +652,7 @@ def main(stdscr):
             dl (str(round(sellingqty,8)))
 
             # sell order with minprofit checking
-            if (oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
+            if (not pybot_threads[actthread]["stopped"] and oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
                     and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
 
