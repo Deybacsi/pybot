@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.07"
+programversion="v0.1.08"
 
 print(programname, programversion)
 
@@ -113,6 +113,25 @@ except FileNotFoundError:
 
 #print(settings)
 
+candleintervalsecs={
+    "1m" : 60,
+    "3m": 3*60,
+    "5m": 5*60,
+    "15m": 15*60,
+    "30m": 30*60,
+    "1h": 60*60,
+    "2h": 2*60*60,
+    "4h": 4*60*60,
+    "6h": 6*60*60,
+    "8h": 8*60*60,
+    "12h": 12*60*60,
+    "1d": 24*60*60,
+    "3d": 3*24*60*60,
+    "1w": 7*24*60*60,
+    "1M": 30*24*60*60  
+}
+
+
 
 #reading pair config files
 dir_list = sorted(os.listdir("pairs"))
@@ -200,7 +219,7 @@ def getcandles(threadno):
             "above" : False
         }
     
-    candles = client.get_klines(symbol=pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"], interval=Client.KLINE_INTERVAL_15MINUTE)
+    candles = client.get_klines(symbol=pybot_threads[threadno]["asset1"]+pybot_threads[threadno]["asset2"], interval=pybot_threads[threadno]["interval"])
     #populate pricedatas
     for i in range(0,len(candles)):
 
@@ -290,7 +309,9 @@ def drawframe(stdscr):
     if settings["testmode"]: testwarningstr="- TEST! - | "
     else: testwarningstr=""
     stdscr.addstr(0,2,U_BOX_TRIGHT+" ")
-    stdscr.addstr(0,4,testwarningstr+'Thread '+str(actualthread)+' '+U_BOX_VERT+' '+pybot_threads[actualthread]["threadname"]+' | Pair: '+pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"],curses.A_BOLD)
+    stdscr.addstr(0,4,testwarningstr+'Thread '+str(actualthread)+' '+U_BOX_VERT+' '+pybot_threads[actualthread]["threadname"]+' | Pair: '
+        +pybot_threads[actualthread]["asset1"]+'/'+pybot_threads[actualthread]["asset2"] +" "+pybot_threads[actualthread]["interval"]
+        +" "+format(pybot_threads[actualthread]["minprofit"],'.2f')+" %",curses.A_BOLD)
     stdscr.addstr(' '+U_BOX_TLEFT)
 
     stdscr.addstr(0,curses.COLS-16,U_BOX_TRIGHT+' '+"Refresh:    "+U_BOX_TLEFT)
@@ -342,7 +363,8 @@ def drawchart(threadno,stdscr):
                 #stdscr.addstr(calcy(actprice["plow"])+1,chartwindowwidth-i,U_ARROWDOWN,curses.color_pair(2) | curses.A_DIM)
                 
         for j in range(0,len(pybot_threads[actualthread]["orders"])):
-            if int(pybot_threads[actualthread]["orders"][j]["transactTime"]/1000)>int(actprice["ptime"]) and int(pybot_threads[actualthread]["orders"][j]["transactTime"]/1000)<int(actprice["ptime"])+(15*60):
+            if (int(pybot_threads[actualthread]["orders"][j]["transactTime"]/1000)>int(actprice["ptime"])
+                and int(pybot_threads[actualthread]["orders"][j]["transactTime"]/1000)<int(actprice["ptime"])+candleintervalsecs[pybot_threads[actualthread]["interval"]]):
                 if pybot_threads[actualthread]["orders"][j]["side"]=="SELL":
                     stdscr.addstr(chartwindow["top"]-2,chartwindowwidth-i,"S")
                     for y in range(chartwindow["top"],calcy(actprice["phigh"]),2): stdscr.addstr(y,chartwindowwidth-i,U_BOX_VERTH)
@@ -590,7 +612,7 @@ def main(stdscr):
         for actthread in range(0,len(pybot_threads)):
             curses.curs_set(True)
             candledataprogressbar=candledataprogressbar[:actthread*2+1] + ">>" + candledataprogressbar[actthread*2+3:]
-            drawstatus(stdscr,"Getting candledata for "+pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"]+' '+Client.KLINE_INTERVAL_15MINUTE+" "+candledataprogressbar+" "+str(int((actthread+1) / len(pybot_threads)*100)) + " %")
+            drawstatus(stdscr,"Getting candledata for "+pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"]+' '+pybot_threads[actthread]["interval"]+" "+candledataprogressbar+" "+str(int((actthread+1) / len(pybot_threads)*100)) + " %")
 
             getcandles(actthread)
             # price from avg price query

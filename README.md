@@ -221,6 +221,7 @@ Tartalmuk:
     "asset1": "BTC",
     "asset2": "USDT",
     "quantity": 15,
+    "interval": "15m",    
     "candlestobuy": 3,
     "candlestosell": 3,
     "minprofit" : 0.5,
@@ -239,6 +240,20 @@ A "tőke" összege, amivel a bot gazdálkodhat.
 A fenti példa alapján ez 15 USDT, vételi szándéknál ennyiért próbál meg majd BTC-t venni. Eladásnál értelemszerűen a 15 USDT-ért vett BTC-t próbálja meg majd eladni, drágábban.
 
 Nem érdemes a Binance által engedett minimális order szintre állítani. Pl ha veszel 10 USDT-ért ETH-t, ebből lejön a trading fee, vagyis kapsz 9.9$-nyi eth-t. Az eladáshoz viszont min 10$-nyi ETH kellene, az order beragadt. (A számok most csak példa jellegűek voltak, nézz utána a minimum összegeknek)
+
+**interval**
+
+Hány perces gyertyákkal dolgozzon a bot. Értékek:
+
+Percek: 1m, 3m, 5m, 15m, 30m
+
+Órák: 1h, 2h, 4h, 6h, 8h, 12h
+
+Napok: 1d, 3d
+
+Egy hét: 1w
+
+Egy hónap: 1M (nagy M!)
 
 **candlestobuy, candlestosell:**
 
@@ -311,6 +326,10 @@ A test modeban az árfolyam **nem tükrözi pontosan** a valós piaci adatokat, 
 Így a test tradek és tranzakciók csak nagyjából lesznek egálban az aktuális valósággal. Emellett mivel hihetetlen nagy kilengések is vannak az árban, a gyertyák esetlegesen extrém low/high értékei a lekérdezés után felül vannak írva, és maximálva vannak **aktuális ár +- 0.1%**-ban. Erre azért volt szükség, mert pl BTC esetén voltak olyan gyertyák, amiknél a low 18k a high pedig 90k volt, ezzel eléggé tönkretéve a chartot, és lehetetlenné téve a tesztelést.
 
 Egyelőre csak linuxon lett hosszabban tesztelve a bot, windowson **elvileg** ugyanúgy működnie kell.
+
+Windows Putty-hoz normális fontok:
+https://github.com/adobe-fonts/source-code-pro/tree/release/TTF
+https://fontsfree.net/sf-mono-regular-font-download.html
 
 ## Linux scriptek
 
