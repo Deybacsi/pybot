@@ -444,9 +444,9 @@ def draworders(stdscr):
             else: # buy order
                 # if it's the last buy order, then show actual positions's p/l percent
                 if i==0:
-                    buycumulativeqty=float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1-i]["fills"][0]["price"])
+                    buyprice=float(pybot_threads[actualthread]["orders"][len(pybot_threads[actualthread]["orders"])-1]["fills"][0]["price"])
                     #profitlosspercent=round((pricedata[actualthread][len(pricedata[actualthread])-1]["pclose"]/buycumulativeqty-1)*100,2)
-                    profitlosspercent=round((pybot_threads[actualthread]["currentprice"]/buycumulativeqty-1)*100,2)
+                    profitlosspercent=round((pybot_threads[actualthread]["currentprice"]/buyprice -1)*100,2)
                     
                     printfloat(stdscr,orderwindow["top"]+1+i, orderwindow["left"]+ordcolsx[5],profitlosspercent,ordercolor,2)
                 # asset1
@@ -670,12 +670,15 @@ def main(stdscr):
 
             #stdscr.addstr(statswindow["top"]+1,statswindow["left"]+40,str(sellingqty))
             dl(pybot_threads[actthread]["asset1"]+" buyqty:"+str(lastorderqty)+" minqty:"+str(minimumqty)+" sellqty:"+str(sellingqty))
+            dl(str(coininfo["filters"]))
             dl (str(sellingqty))
             dl (str(round(sellingqty,8)))
 
             # sell order with minprofit checking
+            #if (not pybot_threads[actthread]["stopped"] and oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
+            #        and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
             if (not pybot_threads[actthread]["stopped"] and oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
-                    and pybot_threads[actthread]["currentprice"]>float(lastorder["fills"][0]["price"])*(100+pybot_threads[actthread]["minprofit"])/100):
+                    and pybot_threads[actthread]["currentprice"]*sellingqty>float(lastorder["cummulativeQuoteQty"])*(100+pybot_threads[actthread]["minprofit"])/100):                    
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
 
                 saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=sellingqty))
