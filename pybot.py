@@ -666,7 +666,7 @@ def main(stdscr):
                 if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
                     # rounding because of 64b floating point fuckery
                     minimumqty=float(coininfo["filters"][i]["minQty"])
-                    sellingqty=round(lastorderqty - (lastorderqty % minimumqty),8)
+                    sellingqty=round(lastorderqty - (lastorderqty % (minimumqty*0.1),8)
 
             #stdscr.addstr(statswindow["top"]+1,statswindow["left"]+40,str(sellingqty))
             dl(pybot_threads[actthread]["asset1"]+" buyqty:"+str(lastorderqty)+" minqty:"+str(minimumqty)+" sellqty:"+str(sellingqty))
