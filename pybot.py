@@ -16,7 +16,7 @@ from datetime import timezone
 import urllib.request
 import curses               # windows: windows-curses
 from curses import wrapper
-import traceback
+from decimal import Decimal
 
 print("Starting Binance module")
 from binance.client import Client
@@ -665,11 +665,12 @@ def main(stdscr):
             for i in range(0,len(coininfo["filters"])):
                 if coininfo["filters"][i]["filterType"]=='LOT_SIZE':
                     # rounding because of 64b floating point fuckery
-                    minimumqty=float(coininfo["filters"][i]["minQty"])
-                    sellingqty=round(lastorderqty - (lastorderqty % minimumqty),8)
+                    stepsize=float(coininfo["filters"][i]["stepSize"])
+                    #sellingqty=round(lastorderqty - (lastorderqty % stepsize),8)
+                    sellingqty=round(float(Decimal(str(lastorderqty)) - (Decimal(str(lastorderqty)) % Decimal(str(stepsize)) ) ),8)
 
             #stdscr.addstr(statswindow["top"]+1,statswindow["left"]+40,str(sellingqty))
-            dl(pybot_threads[actthread]["asset1"]+" buyqty:"+str(lastorderqty)+" minqty:"+str(minimumqty)+" sellqty:"+str(sellingqty))
+            dl(pybot_threads[actthread]["asset1"]+" buyqty:"+str(lastorderqty)+" stepsize:"+str(stepsize)+" sellqty:"+str(sellingqty))
             dl(str(coininfo["filters"]))
             dl (str(sellingqty))
             dl (str(round(sellingqty,8)))
