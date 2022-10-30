@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.08"
+programversion="v0.1.09"
 
 print(programname, programversion)
 
