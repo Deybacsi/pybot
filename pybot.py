@@ -655,7 +655,9 @@ def main(stdscr):
             # buy order
 
             if not pybot_threads[actthread]["stopped"] and oktobuycounter==pybot_threads[actthread]["candlestobuy"]+1 and lastorder["side"]=="SELL":
+                dl("Try buy: "+pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"]+" Qty: "+str(pybot_threads[actthread]["quantity"]))
                 saveorder(actthread,client.order_market_buy(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quoteOrderQty=pybot_threads[actthread]["quantity"]))
+                dl("Done")
                 
 
 
@@ -682,7 +684,7 @@ def main(stdscr):
             if (not pybot_threads[actthread]["stopped"] and oktosellcounter==pybot_threads[actthread]["candlestosell"]+1 and lastorder["side"]=="BUY"
                     and pybot_threads[actthread]["currentprice"]*sellingqty>float(lastorder["cummulativeQuoteQty"])*(100+pybot_threads[actthread]["minprofit"])/100):                    
                 #saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=lastorder["executedQty"]))
-
+                dl("Try sell "+pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"]+" Qty: "+str(sellingqty))
                 saveorder(actthread,client.order_market_sell(symbol=pybot_threads[actthread]["asset1"]+pybot_threads[actthread]["asset2"], quantity=sellingqty))
 
         drawwindow(stdscr)
