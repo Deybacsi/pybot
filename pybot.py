@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 programname="2daMoonBot"
-programversion="v0.1.09"
+programversion="v0.1.10"
 
 print(programname, programversion)
 
@@ -17,6 +17,7 @@ import urllib.request
 import curses               # windows: windows-curses
 from curses import wrapper
 from decimal import Decimal
+import traceback
 
 print("Starting Binance module")
 from binance.client import Client
